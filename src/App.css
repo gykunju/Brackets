@@ -1,0 +1,40 @@
+/* Small presentational styles for the Home courses grid. */
+.course-card {
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+.course-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Ensure images in the course cards stay crisp and cover the area */
+.course-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Horizontal scroll utilities */
+.horizontal-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  padding-bottom: 6px; /* space for scrollbar */
+}
+
+/* Thin, subtle scrollbar for modern browsers */
+.horizontal-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+.horizontal-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 999px;
+}
+.horizontal-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Make scroll snap more forgiving on smaller screens */
+.horizontal-scroll > * {
+  scroll-snap-align: center;
+}
