@@ -29,12 +29,12 @@ function Home() {
 
   const upcoming_events = [
     {
-        event: 'systems programming cat',
+        event: 'systems programming ',
         type: 'exam',
         date: new Date("2025-09-27")
     },
     {
-        event: '',
+        event: 'Programming ',
         type: 'assignment',
         date: new Date("2025-09-25")
     },
@@ -88,21 +88,30 @@ function Home() {
 
       {/* Upcoming Events */}
 
-        <div>
-            <h1 className='geist-font wght-600 text-2xl'>Upcoming Events</h1>
-            <div>
-                {upcoming_events.map(event => (
-                    <div>
-                        <div>
-                            {event.type == "assignment" ? <MdOutlineAssignmentLate size={30}/> : <PiExam size={30}/>}
-                        </div>
-                        <div>
-
-                        </div>
-                    </div>
-                ))}
+      <div>
+        <h1 className="geist-font wght-600 text-2xl">Upcoming Events</h1>
+        <div className="flex flex-col gap-5 mt-4">
+          {upcoming_events.map((event) => (
+            <div className="flex items-center gap-4" key={event.id}>
+              <div className="p-3 rounded-lg bg-lime-100">
+                {event.type == "assignment" ? (
+                  <MdOutlineAssignmentLate size={26} />
+                ) : (
+                  <PiExam size={26} />
+                )}
+              </div>
+              <div className="flex flex-col">
+                <h3 className="geist-font wght-600 text-lg">
+                  {event.event}
+                </h3>
+                <p className="text-lime-800">
+                  {event.date.toLocaleDateString()}
+                </p>
+              </div>
             </div>
+          ))}
         </div>
+      </div>
     </div>
   );
 }
