@@ -7,6 +7,7 @@ import Events from "./pages/Events"
 import Ai_Assistant from "./pages/Ai_Assistant"
 import Courses from "./pages/Courses"
 import Navigation from "./components/Navigation"
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 function App() {
 
@@ -20,6 +21,7 @@ function App() {
       <Route path='/ai-assistant' element={<Ai_Assistant/>}/>
     </Routes>
     <Navigation/>
+    <SpeedInsights />
     </>
   )
 }

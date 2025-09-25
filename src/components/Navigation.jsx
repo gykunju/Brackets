@@ -6,7 +6,7 @@ import { NavLink } from "react-router"
 
 function Navigation() {
   return (
-    <div className="fixed bottom-0 rounded-t-2xl border-2 w-full flex justify-between pb-6 pt-4 pl-0 geist-font wght-600 text-md border-lime-800">
+    <div className="fixed bottom-0 rounded-t-2xl border-2 w-full flex justify-between pb-6 pt-4 pl-0 geist-font wght-600 text-md border-lime-800 bg-white">
       <NavLink to="/" className="w-1/4 text-lime-800 justify-center gap-1 flex flex-col items-center">
         <LiaHomeSolid size={25} />
         <span>Home</span>
