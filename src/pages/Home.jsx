@@ -55,7 +55,7 @@ function Home() {
       {/* Header */}
       <div className="flex justify-center gap-20 items-center relative">
         <h1 className="geist-font wght-700 text-xl">Home</h1>
-        <FiSettings size={25} className="absolute right-5" />
+        <FiSettings size={25} className="absolute right-1" />
       </div>
 
       {/* Current Courses */}

@@ -53,7 +53,7 @@ function Brackets() {
 
   return (
     <div className="geist-font flex flex-col min-h-screen gap-5 bg-[#FCFCF8] blur-m">
-      <div className="p-5 bg-stone-100">
+      <div className="p-5 bg-stone-100 sticky top-0">
         <div className="flex justify-center gap-20 items-center relative">
           <h1 className="geist-font wght-700 text-xl">Brackets</h1>
           <IoMdArrowBack
@@ -95,7 +95,11 @@ function Brackets() {
       </div>
 
       {addModal && (
-        <div className="flex flex-row items-center justify-center w-fit self-center place-self-center border-3 text-lime-800 absolute z-10 bg-[#FCFCF8] rounded-xl bottom-50 top-10 left-10 right-10 h-45 p-5">
+        <div
+    className="fixed inset-0 bg-opacity-40 flex items-center justify-center z-50"
+    onClick={() => setAddModal(false)} // clicking backdrop closes modal
+  >
+        <div className="flex flex-row items-center justify-center w-fit self-center place-self-center border-3 text-lime-800 bg-[#FCFCF8] rounded-xl bottom-50 top-10 left-10 right-10 h-45 p-5">
           <form className="text-center p-3" onSubmit={(e) => addBracket(e)}>
             <div className="flex relative items-center justify-center mb-4">
               <h1 className="geist-font wght-700 text-lg">Add Bracket</h1>
@@ -110,14 +114,19 @@ function Brackets() {
               placeholder="Add Title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="border-b-2 p-1 px-2 mb-4 text-x geist-font wght-500"
+              className="border-b-2 p-1 px-2 mb-4 text-x geist-font wght-500 focus:outline-none focus:ring-0"
             />
-            <button className="geist-font wght-600 border w-full rounded-md p-1 hover:bg-lime-800  hover:text-[#FCFCF8]" type='submit'>
+            <button
+              className="geist-font wght-600 border w-full rounded-md p-1 hover:bg-lime-800  hover:text-[#FCFCF8]"
+              type="submit"
+            >
               Add
             </button>
           </form>
         </div>
+    </div>
       )}
+      
     </div>
   );
 }
