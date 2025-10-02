@@ -40,10 +40,28 @@ function AppContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-blue-100 to-indigo-100 dark:from-gray-900 dark:via-blue-900/20 dark:to-indigo-900/20">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-100 to-purple-100 dark:from-gray-900 dark:via-indigo-900/20 dark:to-purple-900/20">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-lime-700 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading Brackets...</p>
+          <div className="relative mx-auto" style={{ width: '80px', height: '80px' }}>
+            {/* Outer spinning ring */}
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-indigo-600 border-r-purple-600 animate-spin"></div>
+            {/* Middle spinning ring */}
+            <div className="absolute inset-0 m-2 rounded-full border-4 border-transparent border-t-purple-500 border-l-indigo-500 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1s' }}></div>
+            {/* Inner pulsing circle */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+          <div className="mt-8">
+            <h3 className="text-xl font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+              Loading Brackets
+            </h3>
+            <div className="flex items-center justify-center gap-1">
+              <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+              <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+              <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+            </div>
+          </div>
         </div>
       </div>
     );
