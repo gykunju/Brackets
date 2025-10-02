@@ -52,79 +52,88 @@ function Brackets() {
     }
 
   return (
-    <div className="geist-font flex flex-col min-h-screen gap-5 bg-[#FCFCF8] blur-m">
-      <div className="p-5 bg-stone-100 sticky top-0">
-        <div className="flex justify-center gap-20 items-center relative">
-          <h1 className="geist-font wght-700 text-xl">Brackets</h1>
-          <IoMdArrowBack
-            size={28}
-            className="absolute left-0"
-            onClick={() => backPage()}
-          />
-          <GrAdd
-            size={25}
-            className="absolute right-0"
-            onClick={() => setAddModal((prev) => !prev)}
-          />
+    <div className="geist-font flex flex-col min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-indigo-950 dark:to-purple-950">
+      <div className="sticky top-0 z-20 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="p-5 max-w-6xl mx-auto w-full">
+          <div className="flex justify-center gap-20 items-center relative">
+            <h1 className="geist-font wght-700 text-2xl bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Brackets</h1>
+            <button
+              onClick={() => backPage()}
+              className="absolute left-0 p-2 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 hover:from-indigo-200 hover:to-purple-200 transition-colors"
+            >
+              <IoMdArrowBack size={24} className="text-indigo-600 dark:text-indigo-400" />
+            </button>
+            <button
+              onClick={() => setAddModal((prev) => !prev)}
+              className="absolute right-0 p-2 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transition-colors shadow-lg"
+            >
+              <GrAdd size={22} className="text-white" />
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className={`flex flex-col gap-5 px-5 ${addModal && "blur-xs"}`}>
+      <div className={`flex flex-col gap-5 p-5 max-w-6xl mx-auto w-full ${addModal && "blur-xs"}`}>
         {brackets.map((bracket) => (
           <Link
             to={`/brackets/${bracket.title}`}
-            className="flex gap-4 items-center p-4 rounded-md shadow-md bg-stone-100 relative"
+            className="flex gap-5 items-center p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 relative hover:scale-[1.02]"
           >
-            <div className="p-3 border rounded-lg bg-gray-200">
-              <LuBookMinus size={28} />
+            <div className="p-4 border-2 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 border-transparent shadow-md">
+              <LuBookMinus size={32} className="text-white" />
             </div>
             <div className="w-full flex justify-between items-center">
               <div>
-                <h3 className="geist-font wght-800 text-xl">{bracket.title}</h3>
-                <p>{bracket.date.toLocaleDateString()}</p>
+                <h3 className="geist-font wght-800 text-xl mb-1">{bracket.title}</h3>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">{bracket.date.toLocaleDateString()}</p>
               </div>
               {bracket.active && (
-                <span className="mr-5 p-1 px-3 rounded-3xl text-sm bg-amber-500 ">
+                <span className="mr-5 px-4 py-1.5 rounded-full text-sm font-semibold bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md">
                   current
                 </span>
               )}
             </div>
-            <GrFormNext className="absolute right-0 text-gray-500" size={24} />
+            <GrFormNext className="absolute right-4 text-indigo-400" size={28} />
           </Link>
         ))}
       </div>
 
       {addModal && (
         <div
-    className="fixed inset-0 bg-opacity-40 flex items-center justify-center z-50"
-    onClick={() => setAddModal(false)} // clicking backdrop closes modal
-  >
-        <div className="flex flex-row items-center justify-center w-fit self-center place-self-center border-3 text-lime-800 bg-[#FCFCF8] rounded-xl bottom-50 top-10 left-10 right-10 h-45 p-5">
-          <form className="text-center p-3" onSubmit={(e) => addBracket(e)}>
-            <div className="flex relative items-center justify-center mb-4">
-              <h1 className="geist-font wght-700 text-lg">Add Bracket</h1>
-              <AiOutlineClose
-                size={24}
-                className="absolute right-1 border"
-                onClick={() => setAddModal(false)}
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-5"
+          onClick={() => setAddModal(false)}
+        >
+          <div 
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 max-w-md w-full border border-gray-200 dark:border-gray-700"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <form className="text-center" onSubmit={(e) => addBracket(e)}>
+              <div className="flex relative items-center justify-center mb-6">
+                <h1 className="geist-font wght-700 text-2xl bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Add Bracket</h1>
+                <button
+                  type="button"
+                  onClick={() => setAddModal(false)}
+                  className="absolute right-0 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <AiOutlineClose size={24} className="text-gray-600 dark:text-gray-400" />
+                </button>
+              </div>
+              <input
+                id="title"
+                placeholder="Enter bracket title..."
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full border-2 border-indigo-300 dark:border-indigo-600 rounded-xl p-4 mb-6 text-base geist-font wght-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
               />
-            </div>
-            <input
-              id="title"
-              placeholder="Add Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="border-b-2 p-1 px-2 mb-4 text-x geist-font wght-500 focus:outline-none focus:ring-0"
-            />
-            <button
-              className="geist-font wght-600 border w-full rounded-md p-1 hover:bg-lime-800  hover:text-[#FCFCF8]"
-              type="submit"
-            >
-              Add
-            </button>
-          </form>
+              <button
+                className="geist-font wght-600 w-full rounded-xl p-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white transition-all shadow-lg hover:shadow-xl"
+                type="submit"
+              >
+                Add Bracket
+              </button>
+            </form>
+          </div>
         </div>
-    </div>
       )}
       
     </div>

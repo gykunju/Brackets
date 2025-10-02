@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
-import { FiBell, FiX, FiCheck } from 'react-icons/fi';
+import { FiBell, FiX, FiCheck, FiSettings } from 'react-icons/fi';
 import { useNotifications } from '../contexts/NotificationContext';
+import NotificationSettings from './NotificationSettings';
 
 const NotificationBell = () => {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
   const [isOpen, setIsOpen] = React.useState(false);
+  const [showSettings, setShowSettings] = React.useState(false);
 
   useEffect(() => {
     // Request notification permission
@@ -69,13 +71,23 @@ const NotificationBell = () => {
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
             <h3 className="font-semibold text-lg">Notifications</h3>
             <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setShowSettings(true);
+                  setIsOpen(false);
+                }}
+                className="p-2 text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                title="Notification settings"
+              >
+                <FiSettings size={18} />
+              </button>
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="text-sm text-lime-700 hover:text-lime-800 dark:text-lime-500"
+                  className="p-2 text-lime-700 hover:text-lime-800 dark:text-lime-500 rounded-lg hover:bg-lime-100 dark:hover:bg-lime-900/30 transition-colors"
                   title="Mark all as read"
                 >
-                  <FiCheck size={20} />
+                  <FiCheck size={18} />
                 </button>
               )}
               <button
@@ -130,6 +142,9 @@ const NotificationBell = () => {
           </div>
         </div>
       )}
+
+      {/* Settings Modal */}
+      {showSettings && <NotificationSettings onClose={() => setShowSettings(false)} />}
     </div>
   );
 };

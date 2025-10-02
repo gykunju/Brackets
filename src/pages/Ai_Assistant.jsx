@@ -117,38 +117,38 @@ Please provide a helpful, educational response. Be friendly, encouraging, and sp
   };
 
   return (
-    <div className="flex flex-col geist-font min-h-screen relative pb-32">
+    <div className="flex flex-col geist-font min-h-screen relative pb-40 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-indigo-950 dark:to-purple-950">
       {/* Header */}
-      <div className="flex flex-col text-center pt-5 pb-3 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 sticky top-0 z-10">
-        <h1 className="geist-font wght-700 text-xl">AI Tutor</h1>
-        <span className="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-center gap-1">
+      <div className="flex flex-col text-center pt-6 pb-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 sticky top-0 z-10 border-b border-indigo-100 dark:border-indigo-900/50 backdrop-blur-sm">
+        <h1 className="geist-font wght-700 text-2xl bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">AI Tutor</h1>
+        <span className="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-center gap-1 mt-1">
           <span className={`inline-block w-2 h-2 rounded-full ${loading ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`}></span>
           Powered by Gemini AI
         </span>
       </div>
 
       {/* Chats Container */}
-      <div className="flex flex-col gap-5 p-5 lg:px-70 flex-1 overflow-y-auto">
+      <div className="flex flex-col gap-6 p-6 lg:p-8 flex-1 overflow-y-auto max-w-5xl mx-auto w-full">
         {chats.map((chat, index) => (
           <div
             key={index}
-            className={`flex items-end gap-2 max-w-[95%] lg:max-w-[65%] ${
+            className={`flex items-end gap-3 max-w-[95%] lg:max-w-[80%] ${
               chat.speaker === "user"
                 ? "self-end flex-row-reverse"
                 : "self-start flex-row"
             }`}
           >
             {/* Avatar */}
-            <div>
+            <div className="flex-shrink-0">
               {chat.speaker === "ai" ? (
                 <BsStars
-                  size={28}
-                  className="p-1 border rounded-full bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/50 text-purple-600 dark:text-purple-300"
+                  size={32}
+                  className="p-1.5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg"
                 />
               ) : (
                 <LiaUser 
-                  size={28} 
-                  className="p-1 border rounded-full bg-lime-100 dark:bg-lime-900/30 text-lime-700 dark:text-lime-400" 
+                  size={32} 
+                  className="p-1.5 rounded-full bg-gradient-to-br from-lime-500 to-emerald-600 text-white shadow-lg" 
                 />
               )}
             </div>
@@ -163,10 +163,10 @@ Please provide a helpful, educational response. Be friendly, encouraging, and sp
                 {chat.speaker === "ai" ? "AI Tutor" : "You"}
               </span>
               <div
-                className={`rounded-2xl p-4 ${
+                className={`rounded-2xl p-4 shadow-md ${
                   chat.speaker === "user"
-                    ? "bg-lime-700 text-white"
-                    : "bg-stone-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                    ? "bg-gradient-to-br from-lime-600 to-emerald-600 text-white"
+                    : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700"
                 }`}
               >
                 {chat.speaker === "ai" ? (
@@ -233,20 +233,20 @@ Please provide a helpful, educational response. Be friendly, encouraging, and sp
         
         {/* Loading indicator */}
         {loading && (
-          <div className="flex items-end gap-2 max-w-[95%] lg:max-w-[65%] self-start">
-            <div>
+          <div className="flex items-end gap-3 max-w-[95%] lg:max-w-[80%] self-start">
+            <div className="flex-shrink-0">
               <BsStars
-                size={28}
-                className="p-1 border rounded-full bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/50 text-purple-600 dark:text-purple-300"
+                size={32}
+                className="p-1.5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg"
               />
             </div>
             <div className="flex-1">
-              <span className="block text-xs font-semibold mb-1">AI Tutor</span>
-              <div className="rounded-2xl p-4 bg-stone-100 dark:bg-gray-800">
+              <span className="block text-xs font-semibold mb-1 text-gray-700 dark:text-gray-300">AI Tutor</span>
+              <div className="rounded-2xl p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-md">
                 <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                 </div>
               </div>
             </div>
@@ -258,21 +258,21 @@ Please provide a helpful, educational response. Be friendly, encouraging, and sp
       </div>
 
       {/* Input Box */}
-      <div className="p-3 lg:px-62 fixed bottom-20 right-0 left-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-3 max-w-7xl mx-auto">
-          <div className="flex items-center flex-1 border-2 border-lime-600 dark:border-lime-500 rounded-full px-4">
+      <div className="p-4 lg:p-6 fixed bottom-24 right-0 left-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-200 dark:border-gray-700 shadow-lg">
+        <div className="flex items-center gap-3 max-w-5xl mx-auto">
+          <div className="flex items-center flex-1 bg-white dark:bg-gray-800 border-2 border-indigo-500 dark:border-indigo-400 rounded-full px-5 py-1 shadow-lg hover:shadow-xl transition-shadow">
             <input
               ref={inputRef}
               type="text"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ask me anything..."
+              placeholder="Ask me anything about learning..."
               disabled={loading}
-              className="p-3 flex-1 focus:outline-none focus:ring-0 bg-transparent disabled:opacity-50"
+              className="p-3 flex-1 focus:outline-none focus:ring-0 bg-transparent disabled:opacity-50 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
             />
             <button 
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors disabled:opacity-30"
+              className="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors disabled:opacity-30"
               disabled={loading}
               title="Attach file (coming soon)"
             >
@@ -282,7 +282,7 @@ Please provide a helpful, educational response. Be friendly, encouraging, and sp
           <button 
             onClick={sendMessage}
             disabled={loading || !inputMessage.trim()}
-            className="rounded-full p-3 bg-lime-600 hover:bg-lime-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-full p-4 bg-gradient-to-br from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
             title="Send message"
           >
             <TbSend2 size={24} />

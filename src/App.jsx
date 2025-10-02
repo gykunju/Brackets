@@ -6,6 +6,7 @@ import Brackets from "./pages/Brackets"
 import Events from "./pages/Events"
 import Ai_Assistant from "./pages/Ai_Assistant"
 import Courses from "./pages/Courses"
+import CourseDetail from "./pages/CourseDetail"
 import Debug from "./pages/Debug"
 import AuthPage from "./pages/AuthPage"
 import Navigation from "./components/Navigation"
@@ -17,6 +18,7 @@ import VillageCircles from "./components/VillageCircles"
 import ParentDashboard from "./components/ParentDashboard"
 import SponsorBoard from "./components/SponsorBoard"
 import NotificationBell from "./components/NotificationBell"
+import EventNotifications from "./components/EventNotifications"
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -50,9 +52,12 @@ function AppContent() {
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-indigo-100 dark:from-gray-900 dark:via-blue-900/20 dark:to-indigo-900/20">
       {user && (
-        <div className="fixed top-4 right-4 z-50">
-          <NotificationBell />
-        </div>
+        <>
+          <div className="fixed top-4 right-4 z-50">
+            <NotificationBell />
+          </div>
+          <EventNotifications />
+        </>
       )}
       
       <Routes>
@@ -61,6 +66,7 @@ function AppContent() {
         <Route path='/' element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path='/brackets' element={<ProtectedRoute><Brackets /></ProtectedRoute>} />
         <Route path='/brackets/:bracket' element={<ProtectedRoute><Courses /></ProtectedRoute>} />
+        <Route path='/brackets/:bracket/:course' element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
         <Route path='/events' element={<ProtectedRoute><Events /></ProtectedRoute>} />
         <Route path='/ai-assistant' element={<ProtectedRoute><Ai_Assistant /></ProtectedRoute>} />
         <Route path='/dashboard' element={<ProtectedRoute><LearningDashboard /></ProtectedRoute>} />
