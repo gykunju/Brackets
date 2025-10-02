@@ -19,6 +19,7 @@ import ParentDashboard from "./components/ParentDashboard"
 import SponsorBoard from "./components/SponsorBoard"
 import NotificationBell from "./components/NotificationBell"
 import EventNotifications from "./components/EventNotifications"
+import LearningSnippets from "./components/LearningSnippets"
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -75,6 +76,7 @@ function AppContent() {
             <NotificationBell />
           </div>
           <EventNotifications />
+          <LearningSnippets />
         </>
       )}
       
