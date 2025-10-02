@@ -57,6 +57,7 @@ Return ONLY a valid JSON object (no markdown, no code blocks) with this exact st
       "duration": "2-3 hours",
       "topics": ["topic 1", "topic 2", "topic 3"],
       "description": "What students will learn in this module",
+      "content": "Detailed learning content for this module (3-5 paragraphs covering the key concepts, examples, and practical applications)",
       "completed": false
     }
   ]
@@ -67,7 +68,8 @@ Important:
 - Progress to practical applications (Intermediate)
 - Include advanced topics (Advanced level)
 - End with expert/master level content
-- Make it practical and project-based where possible`;
+- Make it practical and project-based where possible
+- Include detailed content for each module that learners can read and learn from`;
 
       const response = await generateText(prompt);
       
@@ -135,6 +137,7 @@ Important:
         duration: "2 hours",
         topics: ["Course overview", "Basic concepts", "Setting up environment"],
         description: "Get started with the basics and understand core concepts",
+        content: `Welcome to ${courseName}! This introductory module lays the foundation for your learning journey. We'll explore what ${courseName} is all about, why it's important, and how it's used in real-world applications. You'll understand the basic terminology and core principles that will be essential throughout this course.\n\nSetting up your learning environment is crucial for success. We'll guide you through the necessary tools, resources, and materials you'll need. Whether it's software, books, or online resources, you'll have everything ready to start your learning journey.\n\nBy the end of this module, you'll have a clear roadmap of what to expect, understand the fundamental concepts, and be ready to dive deeper into more complex topics. This foundation will serve as your launchpad for mastering ${courseName}.`,
         completed: false
       },
       {
@@ -144,6 +147,7 @@ Important:
         duration: "3 hours",
         topics: ["Key principles", "Basic operations", "Simple examples"],
         description: "Learn the fundamental concepts that form the foundation",
+        content: `Now that you're familiar with the basics, let's dive into the core concepts that form the backbone of ${courseName}. These fundamental principles are essential for understanding more advanced topics. We'll break down complex ideas into simple, digestible pieces that you can easily grasp.\n\nYou'll learn about key principles through practical examples and hands-on exercises. Each concept builds upon the previous one, creating a strong foundation of knowledge. We'll explore how these principles work together and why they're important in the broader context of ${courseName}.\n\nThrough simple examples and step-by-step explanations, you'll gain confidence in applying these concepts. By the end of this module, you'll have a solid understanding of the fundamentals and be ready to tackle more intermediate topics.`,
         completed: false
       },
       {
@@ -153,6 +157,7 @@ Important:
         duration: "4 hours",
         topics: ["Advanced operations", "Best practices", "Common patterns"],
         description: "Apply your knowledge to more complex scenarios",
+        content: `With a solid foundation in place, it's time to elevate your skills with intermediate techniques. This module introduces more sophisticated concepts and methods that professionals use in their daily work. You'll learn how to apply your foundational knowledge to solve more complex problems.\n\nBest practices and common patterns are essential for writing efficient, maintainable, and professional-quality work. We'll explore proven strategies that experts use, understanding not just how to do things, but why certain approaches are preferred. You'll learn to recognize patterns and apply them appropriately.\n\nThrough practical exercises and real-world scenarios, you'll develop the confidence to tackle intermediate-level challenges. These techniques will prepare you for more advanced topics while ensuring you're following industry standards and best practices.`,
         completed: false
       },
       {
@@ -162,6 +167,7 @@ Important:
         duration: "5 hours",
         topics: ["Real-world projects", "Problem-solving", "Hands-on practice"],
         description: "Build practical projects and solve real problems",
+        content: `Theory becomes powerful when applied to real-world situations. In this module, you'll work on practical projects that mirror what professionals encounter in their work. These hands-on exercises will help you understand how ${courseName} is used to solve actual problems.\n\nProblem-solving is a critical skill that develops through practice. You'll face challenges that require you to think creatively, apply multiple concepts together, and find effective solutions. Each project is designed to reinforce your learning while building your portfolio.\n\nBy working through real-world scenarios, you'll gain practical experience and develop the confidence to apply your skills independently. These projects will serve as valuable examples of your capabilities and understanding of ${courseName}.`,
         completed: false
       },
       {
@@ -171,6 +177,7 @@ Important:
         duration: "4 hours",
         topics: ["Complex concepts", "Optimization", "Performance tuning"],
         description: "Dive deep into advanced concepts and techniques",
+        content: `Advanced topics push the boundaries of your understanding and introduce you to sophisticated concepts that separate beginners from experts. This module explores complex ideas that require a strong foundation and intermediate skills to fully grasp.\n\nOptimization and performance are crucial considerations for professional work. You'll learn how to analyze efficiency, identify bottlenecks, and implement improvements. Understanding these concepts will help you create high-quality, performant solutions.\n\nThese advanced techniques require practice and patience to master. Take your time with each concept, experiment with different approaches, and don't hesitate to review earlier modules if needed. By the end, you'll have the skills that distinguish advanced practitioners in ${courseName}.`,
         completed: false
       },
       {
@@ -180,6 +187,7 @@ Important:
         duration: "5 hours",
         topics: ["Expert patterns", "System design", "Architecture"],
         description: "Learn expert-level techniques and architectural patterns",
+        content: `Expert techniques represent the pinnacle of professional practice in ${courseName}. This module introduces sophisticated patterns and approaches used by leading professionals in the field. You'll learn to think at a higher level, considering not just individual components but entire systems.\n\nSystem design and architecture require understanding how different pieces fit together to create robust, scalable solutions. You'll explore design patterns, architectural principles, and strategic approaches to complex problems. These skills are essential for senior-level work and leadership roles.\n\nMastering these techniques takes time and experience, but understanding them now will accelerate your growth. You'll learn to make informed decisions about structure, organization, and implementation that reflect expert-level thinking in ${courseName}.`,
         completed: false
       },
       {
@@ -189,6 +197,7 @@ Important:
         duration: "8 hours",
         topics: ["Capstone project", "Integration", "Professional standards"],
         description: "Build a comprehensive project demonstrating mastery",
+        content: `The mastery project is your opportunity to demonstrate everything you've learned throughout this course. This comprehensive project will challenge you to integrate all concepts, techniques, and best practices into a single, cohesive solution that showcases your expertise in ${courseName}.\n\nYou'll work through the entire development lifecycle, from planning and design to implementation and optimization. This project should reflect professional standards and demonstrate your ability to handle complex challenges independently. It will serve as a centerpiece of your portfolio.\n\nTake pride in this work and don't rush through it. Apply everything you've learned about best practices, optimization, and expert techniques. When complete, you'll have a tangible demonstration of your mastery and the confidence to tackle professional-level challenges in ${courseName}.`,
         completed: false
       },
       {
@@ -198,6 +207,7 @@ Important:
         duration: "4 hours",
         topics: ["Industry trends", "Future developments", "Continuous learning"],
         description: "Explore cutting-edge developments and continue your journey",
+        content: `Mastery is not a destination but a continuous journey. This final module explores emerging trends, future developments, and the evolving landscape of ${courseName}. Staying current with industry changes is essential for maintaining expertise and remaining competitive.\n\nYou'll learn about cutting-edge techniques, experimental approaches, and future directions in the field. Understanding where ${courseName} is heading will help you anticipate changes and position yourself for continued success. We'll also discuss strategies for continuous learning and professional development.\n\nYour journey doesn't end here—it's just beginning. With the foundation you've built, you're equipped to explore specialized areas, contribute to the community, and continue growing as an expert. Stay curious, keep practicing, and never stop learning in your ${courseName} journey.`,
         completed: false
       }
     ]
@@ -420,7 +430,7 @@ Important:
                       {isExpanded && !isLocked && (
                         <div className="px-6 pb-6 border-t border-gray-200 dark:border-gray-700 pt-4">
                           <h4 className="font-semibold mb-3 text-gray-900 dark:text-gray-100">Topics Covered:</h4>
-                          <ul className="space-y-2 mb-4">
+                          <ul className="space-y-2 mb-6">
                             {module.topics.map((topic, idx) => (
                               <li key={idx} className="flex items-start gap-2 text-gray-700 dark:text-gray-300">
                                 <span className="text-indigo-600 dark:text-indigo-400 mt-1">•</span>
@@ -428,6 +438,23 @@ Important:
                               </li>
                             ))}
                           </ul>
+                          
+                          {/* Module Content */}
+                          {module.content && (
+                            <div className="mb-6">
+                              <h4 className="font-semibold mb-3 text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                                <FiBook className="text-indigo-600 dark:text-indigo-400" />
+                                Learning Content
+                              </h4>
+                              <div className="bg-white dark:bg-gray-800 border-2 border-indigo-200 dark:border-indigo-800 rounded-xl p-6 space-y-4">
+                                {module.content.split('\n\n').map((paragraph, idx) => (
+                                  <p key={idx} className="text-gray-800 dark:text-gray-200 leading-relaxed text-base">
+                                    {paragraph}
+                                  </p>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                           
                           <button
                             onClick={() => markModuleComplete(module.id)}
