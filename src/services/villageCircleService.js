@@ -1,4 +1,5 @@
 import { supabase } from '../config/supabase';
+import { generateText } from '../config/gemini';
 
 // Create a new village learning circle
 export const createVillageCircle = async (circleData) => {
@@ -137,6 +138,8 @@ export const sendCircleMessage = async (messageData) => {
           user_id: messageData.userId,
           message: messageData.message,
           is_teaching: messageData.isTeaching || false,
+          is_question: messageData.isQuestion || false,
+          reply_to: messageData.replyToId || null,
           created_at: new Date().toISOString()
         }
       ])
@@ -205,5 +208,135 @@ export const markMessageHelpful = async (messageId, circleId, teacherId) => {
   } catch (error) {
     console.error('Error marking message as helpful:', error);
     return false;
+  }
+};
+
+// Mark answer as helpful by question asker (awards more points)
+export const markAnswerAsHelpful = async (answerId, questionId, circleId, helperId, askerId) => {
+  try {
+    // First, verify this is actually an answer to the question
+    const { data: answer } = await supabase
+      .from('circle_messages')
+      .select('*')
+      .eq('id', answerId)
+      .eq('reply_to', questionId)
+      .single();
+
+    if (!answer) {
+      console.error('Answer not found or not related to question');
+      return false;
+    }
+
+    // Verify the person marking is the question asker
+    const { data: question } = await supabase
+      .from('circle_messages')
+      .select('*')
+      .eq('id', questionId)
+      .eq('user_id', askerId)
+      .single();
+
+    if (!question) {
+      console.error('Question not found or user is not the asker');
+      return false;
+    }
+
+    // Update the answer to mark it as validated by asker
+    await supabase
+      .from('circle_messages')
+      .update({ 
+        helpful_count: supabase.raw('helpful_count + 1'),
+        validated_by_asker: true
+      })
+      .eq('id', answerId);
+
+    // Award bonus teaching points (20 points for validated answer)
+    await awardTeachingPoints(circleId, helperId, 20);
+
+    return true;
+  } catch (error) {
+    console.error('Error marking answer as helpful:', error);
+    return false;
+  }
+};
+
+// Get circle resources
+export const getCircleResources = async (circleId) => {
+  try {
+    const { data, error } = await supabase
+      .from('circle_resources')
+      .select(`
+        *,
+        user:users!circle_resources_user_id_fkey(id, full_name, avatar_url)
+      `)
+      .eq('circle_id', circleId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching circle resources:', error);
+    return [];
+  }
+};
+
+// Add circle resource
+export const addCircleResource = async (resourceData) => {
+  try {
+    const { data, error } = await supabase
+      .from('circle_resources')
+      .insert([
+        {
+          circle_id: resourceData.circleId,
+          user_id: resourceData.userId,
+          title: resourceData.title,
+          type: resourceData.type,
+          url: resourceData.url,
+          description: resourceData.description,
+          created_at: new Date().toISOString()
+        }
+      ])
+      .select();
+
+    if (error) throw error;
+    return data[0];
+  } catch (error) {
+    console.error('Error adding circle resource:', error);
+    return null;
+  }
+};
+
+// Generate AI learning content for a circle
+export const generateCircleLearningContent = async (circleName, category) => {
+  try {
+    const prompt = `Generate comprehensive learning content for a study group called "${circleName}" focused on ${category}.
+
+Include:
+1. Key concepts and topics to cover
+2. Learning objectives
+3. Suggested study approach
+4. Practice exercises or discussion questions
+5. Additional resources or topics to explore
+
+Format the response as clear, structured content that students can follow.`;
+
+    const content = await generateText(prompt);
+
+    if (content) {
+      // Store as a resource
+      return {
+        id: `ai_${Date.now()}`,
+        title: `AI Study Guide: ${circleName}`,
+        type: 'ai_generated',
+        description: 'AI-generated learning content tailored for this circle',
+        content: content,
+        created_at: new Date().toISOString(),
+        user: null
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error generating learning content:', error);
+    return null;
   }
 };
