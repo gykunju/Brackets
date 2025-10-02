@@ -1,21 +1,57 @@
 {
-  "name": "Brackets",
+  "name": "Brackets: Community-Powered Learning Platform",
   "short_name": "Brackets",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FFFFFF",
-  "theme_color": "#FFFFFF",
-  "description": "An education centered PWA for all your education needs",
+  "theme_color": "#84CC16",
+  "description": "Community-powered learning platform with AI tutoring, peer collaboration, and real-time notifications",
+  "orientation": "portrait-primary",
+  "categories": ["education", "productivity"],
   "icons": [
     {
       "src": "/vite.svg",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     },
     {
       "src": "/vite.svg",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "/vite.svg",
+      "sizes": "540x720",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Learning Dashboard",
+      "short_name": "Dashboard",
+      "description": "View your learning progress and AI recommendations",
+      "url": "/dashboard",
+      "icons": [{ "src": "/vite.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Village Circles",
+      "short_name": "Circles",
+      "description": "Join peer learning circles",
+      "url": "/village-circles",
+      "icons": [{ "src": "/vite.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "AI Assistant",
+      "short_name": "AI Tutor",
+      "description": "Get personalized learning help",
+      "url": "/ai-assistant",
+      "icons": [{ "src": "/vite.svg", "sizes": "96x96" }]
+    }
+  ],
+  "prefer_related_applications": false
 }

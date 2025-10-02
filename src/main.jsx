@@ -10,7 +10,7 @@ createRoot(document.getElementById("root")).render(
       <App />
     </BrowserRouter>
   </StrictMode>
-);
+)
 
 
 if('serviceWorker' in navigator) {
