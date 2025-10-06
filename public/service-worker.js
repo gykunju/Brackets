@@ -31,7 +31,7 @@
 
 
 // 🟣 Change this when you deploy a new version
-const CACHE_NAME = "brackets-pwa-v1";
+const CACHE_NAME = "brackets-pwa-v2";
 
 self.addEventListener("install", (event) => {
   // Force the new service worker to activate immediately
