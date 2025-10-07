@@ -2,6 +2,7 @@ import { FiSettings } from "react-icons/fi";
 import { MdOutlineAssignmentLate } from "react-icons/md";
 import { PiExam } from "react-icons/pi";
 import { Link } from 'react-router'
+import { motion } from "framer-motion";
 
 function Home() {
   const current_courses = [
@@ -51,11 +52,15 @@ function Home() {
   ]
 
   return (
-    <div className="min-h-screen p-5 pb-25 geist-font flex flex-col gap-7">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen p-5 pb-25 geist-font flex flex-col gap-7"
+    >
       {/* Header */}
       <div className="flex justify-center gap-20 items-center relative">
         <h1 className="geist-font wght-700 text-xl">Home</h1>
-        <Link to='/profile'className="absolute right-1">
+        <Link to="/profile" className="absolute right-1">
           <FiSettings size={25} />
         </Link>
       </div>
@@ -112,7 +117,7 @@ function Home() {
           ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

@@ -4,6 +4,7 @@ import { FiSend } from "react-icons/fi";
 import { IoMdAttach } from "react-icons/io";
 import { TbSend2 } from "react-icons/tb";
 import { useRef, useEffect } from 'react'
+import {motion} from 'framer-motion'
 
 function Ai_Assistant() {
   const chats = [
@@ -37,7 +38,11 @@ function Ai_Assistant() {
   }, [chats]);
 
   return (
-    <div className="flex flex-col geist-font min-h-screen relative pb-50">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="flex flex-col geist-font min-h-screen relative pb-50"
+    >
       {/* Header */}
       <div className="flex flex-col text-center pt-5 pb-3 bg-stone-100 sticky top-0">
         <h1 className="geist-font wght-700 text-xl">Ai Assistant</h1>
@@ -88,7 +93,7 @@ function Ai_Assistant() {
             </div>
           </div>
         ))}
-        <div ref={chatEndRef}/>
+        <div ref={chatEndRef} />
       </div>
 
       {/* text box */}
@@ -107,7 +112,7 @@ function Ai_Assistant() {
           />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

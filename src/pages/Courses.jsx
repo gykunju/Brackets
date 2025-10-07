@@ -3,7 +3,7 @@ import { useLocation } from 'react-router'
 import { LuNotebookText } from "react-icons/lu";
 import { GrFormNext } from "react-icons/gr";
 import { GrAdd } from "react-icons/gr";
-
+import { motion } from 'framer-motion'
 
 function Courses() {
   const backPage = () => {
@@ -70,7 +70,11 @@ function Courses() {
   const bracket = location.pathname.replace("%20", " ").replace("/brackets/", "")
 
   return (
-    <div className="geist-font flex flex-col min-h-screen gap-2 pb-25 bg-[#FCFCF8]">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="geist-font flex flex-col min-h-screen gap-2 pb-25 bg-[#FCFCF8]"
+    >
       {/* Header */}
       <div className="p-5 bg-stone-100 sticky top-0 z-10">
         <div className="flex justify-center ap-20 items-center relative">
@@ -98,7 +102,7 @@ function Courses() {
           </div>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 }
 

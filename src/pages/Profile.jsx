@@ -7,6 +7,7 @@ import { CiDark } from "react-icons/ci";
 import { GoPerson } from "react-icons/go";
 import {useState} from 'react'
 import { LiaQuestionCircle } from "react-icons/lia";
+import {motion} from 'framer-motion'
 
 function Profile() {
 
@@ -17,7 +18,11 @@ function Profile() {
   const [mode, setMode ] = useState("light")
 
   return (
-    <div className="flex flex-col pb-25">
+    <motion.div
+    initial={{ y: -100}}
+    animate={{ y: 1}}
+    exit={{ y: 200}}
+    className="flex flex-col pb-25">
       <div className="flex p-5 items-center justify-center">
         <IoMdArrowBack
           size={28}
@@ -42,7 +47,7 @@ function Profile() {
           <h1 className="geist-font wght-700 text-lg text-gray-600 mb-2">
             SETTINGS
           </h1>
-          <div className="bg-stone-100 border rounded-lg p-2 px-4  lg:p-5 flex flex-col gap-5">
+          <div className="bg-stone-100 rounded-lg p-2 px-4  lg:p-5 flex flex-col gap-5">
             <div className="flex gap-5 items-center">
               <div className="bg-lime-100 p-3 rounded-lg">
                 <HiOutlineBell size={30} className="text-lime-800" />
@@ -129,8 +134,8 @@ function Profile() {
           </div>
         </div>
 
-        <div className="lg:px-50">
-          <div className="border p-5 flex items-center gap-5 rounded-lg">
+        <div className="lg:px-50 ">
+          <div className="bg-stone-100 p-5 flex items-center gap-5 rounded-lg">
             <div className="bg-red-200 p-3 rounded-lg">
               <MdOutlineLogout size={30} className="text-red-800" />
             </div>
@@ -138,7 +143,7 @@ function Profile() {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

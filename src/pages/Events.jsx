@@ -5,6 +5,7 @@ import { CiClock2 } from "react-icons/ci";
 import { CiMapPin } from "react-icons/ci";
 import { AiOutlineClose } from "react-icons/ai";
 import {useState} from 'react'
+import {motion} from 'framer-motion'
 
 function Events() {
     const [addModal, setAddModal] = useState(false)
@@ -52,7 +53,11 @@ function Events() {
     let upcoming = 5
     let past = 0
   return (
-    <div className="geist-font flex flex-col min-h-screen gap-5 bg-[#FCFCF8] blur-m pb-25">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="geist-font flex flex-col min-h-screen gap-5 bg-[#FCFCF8] blur-m pb-25"
+    >
       <div className="px-5 py-4 bg-stone-100 sticky top-0">
         <div className="flex justify-center gap-20 items-center relative">
           <h1 className="geist-font wght-700 text-xl">Events</h1>
@@ -168,7 +173,7 @@ function Events() {
           </div>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
