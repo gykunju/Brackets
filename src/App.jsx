@@ -10,15 +10,26 @@ import Events from "./pages/Events"
 import Courses from "./pages/Courses"
 import Home from "./pages/Home"
 import Profile from "./pages/Profile"
+import NotFound from "./pages/NotFound"
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import { useUser } from './context/UserContext'
 
 function App() {
+
+  const { isLoggedIn } = useUser()
 
   return (
     <>
       <Routes>
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/signin" element={<Signin />} />
+        {
+          !isLoggedIn && (
+            <>
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/signin" element={<Signin />} />
+              <Route path='*' element={<Signup/>} />
+            </>
+          )
+        }
         <Route path="/" element={<AppLayout />} >
           <Route index element={<Home/>}/>
           <Route path="ai-assistant" element={<Ai_Assistant />} />
@@ -26,6 +37,7 @@ function App() {
           <Route path="brackets/:bracket" element={<Courses />} />
           <Route path="events" element={<Events />} />
           <Route path="profile" element={<Profile />} />
+          <Route path='*' element={<NotFound/>}/>
         </Route>
       </Routes>
       <SpeedInsights />

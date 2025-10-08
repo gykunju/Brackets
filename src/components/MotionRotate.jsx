@@ -1,12 +1,33 @@
-import * as motion from "motion/react-client";
+"use client";
 
-export default function Rotate() {
+import * as motion from "motion/react-client";
+import { useState } from "react";
+
+export default function LayoutAnimation() {
+  const [isOn, setIsOn] = useState(false);
+
+  const toggleSwitch = () => setIsOn(!isOn);
+
   return (
-    <motion.div
-      style={box}
-      animate={{ rotate: 360 }}
-      transition={{ duration: 1 }}
-    />
+    <button
+      className="toggle-container"
+      style={{
+        ...container,
+        justifyContent: "flex-" + (isOn ? "start" : "end"),
+      }}
+      onClick={toggleSwitch}
+    >
+      <motion.div
+        className="toggle-handle"
+        style={handle}
+        layout
+        transition={{
+          type: "spring",
+          visualDuration: 0.2,
+          bounce: 0.2,
+        }}
+      />
+    </button>
   );
 }
 
@@ -14,9 +35,19 @@ export default function Rotate() {
  * ==============   Styles   ================
  */
 
-const box = {
+const container = {
   width: 100,
-  height: 100,
-  backgroundColor: "#ff0088",
-  borderRadius: 5,
+  height: 50,
+  backgroundColor: "black",
+  borderRadius: 50,
+  cursor: "pointer",
+  display: "flex",
+  padding: 10,
+};
+
+const handle = {
+  width: 50,
+  height: 50,
+  backgroundColor: "#9911ff",
+  borderRadius: "50%",
 };

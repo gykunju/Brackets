@@ -3,6 +3,7 @@ import { MdOutlineAssignmentLate } from "react-icons/md";
 import { PiExam } from "react-icons/pi";
 import { Link } from 'react-router'
 import { motion } from "framer-motion";
+import LayoutAnimation from '../components/MotionRotate'
 
 function Home() {
   const current_courses = [
