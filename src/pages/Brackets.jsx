@@ -5,51 +5,102 @@ import { GrFormNext } from "react-icons/gr";
 import { GrAdd } from "react-icons/gr";
 import { AiOutlineClose } from "react-icons/ai";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useUser } from "../context/UserContext";
 
 function Brackets() {
-  const brackets = [
-    {
-      title: "Semester 1",
-      date: new Date("2025-09-27"),
-      active: true,
-    },
-    {
-      title: "Semester 2",
-      date: new Date("2025-09-27"),
-      active: true,
-    },
-    {
-      title: "Semester 3",
-      date: new Date("2025-09-27"),
-      active: false,
-    },
-    {
-      title: "Semester 4",
-      date: new Date("2025-09-27"),
-      active: false,
-    },
-  ];
+  const { brackets, setBrackets, supabase } = useUser();
 
   const [addModal, setAddModal] = useState(false);
-  const [title, setTitle] = useState();
+  const [title, setTitle] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Set up real-time subscription for brackets
+  useEffect(() => {
+    const bracketsSubscription = supabase
+      .channel('brackets_changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'bracket' 
+        }, 
+        (payload) => {
+          // Update brackets state based on the change
+          if (payload.eventType === 'INSERT') {
+            setBrackets(prev => [payload.new, ...prev]);
+          } else if (payload.eventType === 'DELETE') {
+            setBrackets(prev => prev.filter(bracket => bracket.id !== payload.old.id));
+          } else if (payload.eventType === 'UPDATE') {
+            setBrackets(prev => prev.map(bracket => 
+              bracket.id === payload.new.id ? payload.new : bracket
+            ));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      if (bracketsSubscription) bracketsSubscription.unsubscribe();
+    };
+  }, []);
 
   const backPage = () => {
     window.history.back();
   };
 
-  const addBracket = (e) => {
+  const addBracket = async (e) => {
     e.preventDefault();
-    let bracket = {
-      title: title,
-      date: new Date(),
-      active: true,
-    };
-    brackets.push(bracket);
-    console.log(brackets);
-    setTitle("");
-    setAddModal(false);
+    if (!title.trim()) return;
+
+    try {
+      setIsLoading(true);
+
+      const newBracket = {
+        title: title.trim(),
+        created_at: new Date().toISOString(),
+        current: brackets.length === 0, // Make it current if it's the first bracket
+      };
+
+      // Optimistically update UI
+      const optimisticBracket = {
+        ...newBracket,
+        id: `temp-${Date.now()}`, // Temporary ID  will be replaced
+      };
+      setBrackets(prev => [optimisticBracket, ...prev]);
+
+      // Create the bracket in Supabase
+      const { data, error } = await supabase
+        .from("bracket")
+        .insert([newBracket])
+        .select()
+        .single();
+
+      if (error) {
+        // If there's an error, remove the optimistic update
+        setBrackets(prev => prev.filter(b => b.id !== optimisticBracket.id));
+        throw error;
+      }
+
+      // Replace the optimistic bracket with the real one
+      setBrackets(prev => prev.map(b => 
+        b.id === optimisticBracket.id ? data : b
+      ));
+
+      setTitle("");
+      setAddModal(false);
+    } catch (error) {
+      console.error("Error adding bracket:", error.message);
+      // You might want to show an error toast here
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  // created_at: "2025-10-09T16:57:43.858043+00:00";
+  // current: true;
+  // id: 1;
+  // title: "Semester 1";
 
   return (
     <motion.div
@@ -91,12 +142,12 @@ function Brackets() {
 
       <div className={`flex-1 py-6 px-5 ${addModal ? "blur-sm" : ""}`}>
         <div className="max-w-4xl mx-auto grid gap-4">
-          {brackets.map((bracket, index) => (
+          {brackets.map((bracket) => (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + index * 0.1 }}
-              key={bracket.title}
+              transition={{ delay: 0.2 + bracket.id * 0.1 }}
+              key={bracket.id}
             >
               <Link
                 to={`/brackets/${bracket.title}`}
@@ -112,12 +163,12 @@ function Brackets() {
                       {bracket.title}
                     </h3>
                     <p className="text-sm text-gray-600">
-                      {bracket.date.toLocaleDateString()}
+                      {new Date(bracket.created_at).toLocaleDateString()}
                     </p>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    {bracket.active && (
+                    {bracket.current && (
                       <span className="px-3 py-1 rounded-full text-sm bg-gradient-to-r from-lime-500 to-lime-600 text-white shadow-sm geist-font wght-600">
                         Current
                       </span>
@@ -184,7 +235,8 @@ function Brackets() {
                         placeholder="Enter bracket title"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        className="w-full p-3 rounded-lg border border-stone-200 text-base geist-font wght-500 bg-white/50 focus:border-lime-600 focus:ring-1 focus:ring-lime-600 transition-all"
+                        disabled={isLoading}
+                        className="w-full p-3 rounded-lg border border-stone-200 text-base geist-font wght-500 bg-white/50 focus:border-lime-600 focus:ring-1 focus:ring-lime-600 transition-all disabled:bg-stone-50 disabled:text-gray-500"
                       />
                     </div>
                   </div>
@@ -199,12 +251,13 @@ function Brackets() {
                       Cancel
                     </motion.button>
                     <motion.button
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.98 }}
+                      whileHover={{ scale: isLoading ? 1 : 1.01 }}
+                      whileTap={{ scale: isLoading ? 1 : 0.98 }}
                       type="submit"
-                      className="flex-1 py-2.5 px-4 rounded-lg bg-lime-800 text-white hover:bg-lime-700 geist-font wght-600 transition-colors shadow-sm"
+                      disabled={isLoading}
+                      className="flex-1 py-2.5 px-4 rounded-lg bg-lime-800 text-white hover:bg-lime-700 disabled:bg-lime-800/70 geist-font wght-600 transition-colors shadow-sm"
                     >
-                      Create Bracket
+                      {isLoading ? "Creating..." : "Create Bracket"}
                     </motion.button>
                   </div>
                 </form>
