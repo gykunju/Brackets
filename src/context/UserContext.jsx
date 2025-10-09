@@ -15,17 +15,7 @@ export function UserProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
 
-  async function signIn(formData) {
-    const { data, error } = await supabase.auth.signInWithPassword(formData);
-    if (data && !error) {
-      setUser(data.user);
-      setIsLoggedIn(true);
-      navigate("/");
-    } else {
-      setErrors((prev) => [...prev, error]);
-      throw new Error(error);
-    }
-  }
+ 
   
   // Check current session
   const checkSession = async () => {
@@ -72,6 +62,18 @@ export function UserProvider({ children }) {
     console.log(isLoggedIn);
   }, []);
 
+   async function signIn(formData) {
+     const { data, error } = await supabase.auth.signInWithPassword(formData);
+     if (data && !error) {
+       setUser(data.user);
+       setIsLoggedIn(true);
+       navigate("/");
+     } else {
+       setErrors((prev) => [...prev, error]);
+       throw new Error(error);
+     }
+   }
+
   async function signUp(formData) {
     const { data, error } = await supabase.auth.signUp(formData);
     console.log(data);
@@ -100,6 +102,15 @@ export function UserProvider({ children }) {
     }
   }
 
+  async function signOut() {
+    const { error } = supabase.auth.signOut()
+
+    if (error) throw new Error(error)
+
+    setIsLoggedIn(false)
+    navigate('/signup')
+  }
+
   return (
     <userContext.Provider
       value={{
@@ -109,7 +120,8 @@ export function UserProvider({ children }) {
         signIn,
         signUp,
         errors,
-        checkSession
+        checkSession,
+        signOut 
       }}
     >
       {children}

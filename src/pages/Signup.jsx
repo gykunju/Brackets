@@ -2,23 +2,57 @@ import { IoMdArrowBack } from "react-icons/io";
 import { FaGoogle } from "react-icons/fa";
 import { useNavigate, Link } from "react-router";
 import { motion } from "framer-motion";
-import { useUser } from '../context/UserContext'
-import { useState, useEffect } from 'react'
+import { useUser } from "../context/UserContext";
+import { useState, useEffect } from "react";
 
 function Signup() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [fullName, setFullName] = useState("")
-  const [passwordConfirm, setPasswordConfirm] = useState("")
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [errors, setErrors] = useState([]);
+  const [passwordConfirm, setPasswordConfirm] = useState("");
 
-  const { signUp, isLoggedIn } = useUser(); 
-  console.log(isLoggedIn)
+  const { signUp, isLoggedIn } = useUser();
+
+  const [isLoading, setIsLoading] = useState(false);
 
   async function handleSignUp(e) {
-    e.preventDefault()
+    e.preventDefault();
+    setErrors([]);
 
-    console.log(fullName.split(" ")[1])
+    // Validation
+    const newErrors = [];
+
+    if (!email.trim()) {
+      newErrors.push("Email is required");
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        newErrors.push("Please enter a valid email address");
+      }
+    }
+
+    if (!fullName.trim()) {
+      newErrors.push("Full name is required");
+    } else if (fullName.trim().split(" ").length < 2) {
+      newErrors.push("Please provide both first and last name");
+    }
+
+    if (!password) {
+      newErrors.push("Password is required");
+    } else if (password.length < 6) {
+      newErrors.push("Password must be at least 6 characters");
+    }
+
+    if (password !== passwordConfirm) {
+      newErrors.push("Passwords do not match");
+    }
+
+    if (newErrors.length > 0) {
+      setErrors(newErrors);
+      return;
+    }
 
     const formData = {
       email: email.trim(),
@@ -26,20 +60,26 @@ function Signup() {
       options: {
         data: {
           first_name: fullName.trim().split(" ")[0],
-          last_name: fullName.trim().split(" ")[1] ? fullName.trim().split(" ")[1] : ""
-          }
-      }
-    }
+          last_name: fullName.trim().split(" ")[1] || "",
+        },
+      },
+    };
 
+    setIsLoading(true);
     try {
-      await signUp(formData)
+      await signUp(formData);
     } catch (err) {
-      throw new Error(err)
+      if (err.message.includes("already registered")) {
+        setErrors(["This email is already registered"]);
+      } else {
+        setErrors(["An error occurred during signup. Please try again."]);
+      }
+    } finally {
+      setIsLoading(false);
     }
   }
 
-
-
+  console.log(errors);
 
   return (
     <motion.div
@@ -55,7 +95,7 @@ function Signup() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center w-full gap-2"
           >
             <h1 className="text-5xl geist-font wght-800">[ ]</h1>
             <h1 className="text-5xl geist-font wght-700">Brackets</h1>
@@ -64,9 +104,12 @@ function Signup() {
 
         {/* form */}
         <div className="mt-3 p-5 lg:p-10 flex flex-col gap-4 lg:mt-0 lg:w-2/3 lg:justify-center lg:max-w-xl lg:mx-auto">
-
           <div className="flex items-center justify-center relative ">
-            <motion.div whileHover={{  }} whileTap={{ scale: 0.95 }} className='flex items-center'>
+            <motion.div
+              whileHover={{}}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center"
+            >
               <IoMdArrowBack
                 size={28}
                 className="absolute left-0 text-gray-700 cursor-pointer hover:text-lime-800 transition-colors"
@@ -85,6 +128,22 @@ function Signup() {
             transition={{ delay: 0.3 }}
             onSubmit={handleSignUp}
           >
+            {errors.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 rounded-lg bg-red-50 border border-red-200"
+              >
+                {errors.map((error, index) => (
+                  <p
+                    key={index}
+                    className="text-red-600 text-sm mb-1 last:mb-0"
+                  >
+                    {error}
+                  </p>
+                ))}
+              </motion.div>
+            )}
             <div className="flex flex-col gap-1">
               <label className="text-base geist-font wght-600 text-gray-700">
                 Email
@@ -120,6 +179,7 @@ function Signup() {
                 className="border rounded-lg geist-font text-gray-900 border-gray-300 p-3 text-base bg-white/50 focus:border-lime-600 focus:ring-1 focus:ring-lime-600 transition-all"
                 placeholder="Create a password"
               />
+          
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-base geist-font wght-600 text-gray-700">
@@ -134,12 +194,37 @@ function Signup() {
               />
             </div>
             <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={!isLoading ? { scale: 1.01 } : {}}
+              whileTap={!isLoading ? { scale: 0.98 } : {}}
+              disabled={isLoading}
               type="submit"
-              className="mt-2 py-3.5 rounded-lg bg-lime-800 text-white geist-font wght-600 hover:bg-lime-700 transition-colors shadow-sm"
+              className={`mt-2 py-3.5 rounded-lg bg-lime-800 text-white geist-font wght-600 hover:bg-lime-700 transition-all shadow-sm flex items-center justify-center ${
+                isLoading ? "opacity-90 cursor-not-allowed" : ""
+              }`}
             >
-              Create Account
+              {isLoading ? (
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+              ) : null}
+              {isLoading ? "Creating Account..." : "Create Account"}
             </motion.button>
           </motion.form>
 

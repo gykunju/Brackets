@@ -8,8 +8,11 @@ import { GoPerson } from "react-icons/go";
 import {useState} from 'react'
 import { LiaQuestionCircle } from "react-icons/lia";
 import {motion} from 'framer-motion'
+import { useUser } from '../context/UserContext'
 
 function Profile() {
+
+  const { signOut } = useUser()
 
   const backPage = () => {
     window.history.back()
@@ -136,10 +139,12 @@ function Profile() {
 
         <div className="lg:px-50 ">
           <div className="bg-stone-100 p-5 flex items-center gap-5 rounded-lg">
-            <div className="bg-red-200 p-3 rounded-lg">
-              <MdOutlineLogout size={30} className="text-red-800" />
-            </div>
-            <p className="text-xl geist-font wght-600 text-red-700">Log Out</p>
+            <button onClick={() => signOut()} className='flex items-center gap-5'>
+              <div className=" bg-red-200 p-3 rounded-lg">
+                <MdOutlineLogout size={30} className="text-red-800" />
+              </div>
+              <p className="text-xl geist-font wght-600 text-red-700">Log Out</p>
+            </button>
           </div>
         </div>
       </div>
