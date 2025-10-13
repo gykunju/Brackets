@@ -6,17 +6,38 @@ import { MdOutlineLogout } from "react-icons/md";
 import { CiLight } from "react-icons/ci";
 import { CiDark } from "react-icons/ci";
 import { GoPerson } from "react-icons/go";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LiaQuestionCircle } from "react-icons/lia";
 import { motion } from "framer-motion";
 import { useUser } from "../context/UserContext";
 
 function Profile() {
-  const { signOut } = useUser();
+  const { signOut, profile, getProfile, user } = useUser();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const backPage = () => {
     window.history.back();
   };
+
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        setIsLoading(true);
+        setError(null);
+        await getProfile();
+      } catch (err) {
+        console.error("Error loading profile:", err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    if (!profile) {
+      loadProfile();
+    }
+  }, []);
 
   const [mode, setMode] = useState("light");
 
@@ -55,27 +76,65 @@ function Profile() {
           transition={{ delay: 0.2 }}
           className="flex flex-col geist-font items-center"
         >
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="relative group cursor-pointer bg-gradient-to-br from-lime-700 to-lime-900 p-10 rounded-full mb-5 shadow-lg"
-          >
-            <MdOutlineCameraAlt size={40} className="text-white/90" />
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileHover={{ opacity: 1 }}
-              className="absolute inset-0 bg-black/20 rounded-full flex items-center justify-center"
-            >
-              <span className="text-white text-sm font-medium">
-                Change Photo
-              </span>
-            </motion.div>
-          </motion.div>
-          <h2 className="geist-font wght-700 text-2xl text-gray-900">
-            Alvin Gikunju
-          </h2>
-          <p className="geist-font wght-500 text-gray-500 mt-1">
-            alvingikuju@gmail.com
-          </p>
+          {!profile ? (
+            <div className="flex flex-col items-center gap-5">
+              <div className="bg-gradient-to-br from-lime-700 to-lime-900 p-10 rounded-full animate-pulse">
+                <div className="w-10 h-10" />
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <div className="h-7 w-48 bg-gray-200 rounded-md animate-pulse" />
+                <div className="h-5 w-40 bg-gray-100 rounded-md animate-pulse" />
+              </div>
+            </div>
+          ) : (
+            <>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="relative group cursor-pointer bg-gradient-to-br from-lime-700 to-lime-900 p-10 rounded-full mb-5 shadow-lg"
+              >
+                {profile.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt={profile.full_name}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <MdOutlineCameraAlt size={40} className="text-white/90" />
+                )}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileHover={{ opacity: 1 }}
+                  className="absolute inset-0 bg-black/20 rounded-full flex items-center justify-center"
+                >
+                  <span className="text-white text-sm font-medium">
+                    Change Photo
+                  </span>
+                </motion.div>
+              </motion.div>
+              <h2 className="geist-font wght-700 text-2xl text-gray-900">
+                {profile.full_name}
+              </h2>
+              <p className="geist-font wght-500 text-gray-500 mt-1">
+                {profile.email}
+              </p>
+              {profile.courses > 0 || profile.brackets > 0 ? (
+                <div className="flex gap-4 mt-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-lime-800">
+                      {profile.brackets}
+                    </p>
+                    <p className="text-sm text-gray-600">Brackets</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-lime-800">
+                      {profile.courses}
+                    </p>
+                    <p className="text-sm text-gray-600">Courses</p>
+                  </div>
+                </div>
+              ) : null}
+            </>
+          )}
         </motion.div>
 
         <motion.div

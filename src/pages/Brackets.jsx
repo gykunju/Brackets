@@ -9,32 +9,38 @@ import { useState, useEffect } from "react";
 import { useUser } from "../context/UserContext";
 
 function Brackets() {
-  const { brackets, setBrackets, supabase } = useUser();
+  const { brackets, user, setBrackets, supabase } = useUser();
 
   const [addModal, setAddModal] = useState(false);
   const [title, setTitle] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  
+  console.log(user)
+
   // Set up real-time subscription for brackets
   useEffect(() => {
     const bracketsSubscription = supabase
-      .channel('brackets_changes')
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'bracket' 
-        }, 
+      .channel("brackets_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "bracket",
+        },
         (payload) => {
           // Update brackets state based on the change
-          if (payload.eventType === 'INSERT') {
-            setBrackets(prev => [payload.new, ...prev]);
-          } else if (payload.eventType === 'DELETE') {
-            setBrackets(prev => prev.filter(bracket => bracket.id !== payload.old.id));
-          } else if (payload.eventType === 'UPDATE') {
-            setBrackets(prev => prev.map(bracket => 
-              bracket.id === payload.new.id ? payload.new : bracket
-            ));
+          if (payload.eventType === "INSERT") {
+            setBrackets((prev) => [payload.new, ...prev]);
+          } else if (payload.eventType === "DELETE") {
+            setBrackets((prev) =>
+              prev.filter((bracket) => bracket.id !== payload.old.id)
+            );
+          } else if (payload.eventType === "UPDATE") {
+            setBrackets((prev) =>
+              prev.map((bracket) =>
+                bracket.id === payload.new.id ? payload.new : bracket
+              )
+            );
           }
         }
       )
@@ -59,7 +65,8 @@ function Brackets() {
       const newBracket = {
         title: title.trim(),
         created_at: new Date().toISOString(),
-        current: brackets.length === 0, // Make it current if it's the first bracket
+        current: brackets.length === 0,
+          // Make it current if it's the first bracket
       };
 
       // Optimistically update UI
@@ -67,7 +74,7 @@ function Brackets() {
         ...newBracket,
         id: `temp-${Date.now()}`, // Temporary ID  will be replaced
       };
-      setBrackets(prev => [optimisticBracket, ...prev]);
+      setBrackets((prev) => [optimisticBracket, ...prev]);
 
       // Create the bracket in Supabase
       const { data, error } = await supabase
@@ -78,14 +85,16 @@ function Brackets() {
 
       if (error) {
         // If there's an error, remove the optimistic update
-        setBrackets(prev => prev.filter(b => b.id !== optimisticBracket.id));
+        setBrackets((prev) =>
+          prev.filter((b) => b.id !== optimisticBracket.id)
+        );
         throw error;
       }
 
       // Replace the optimistic bracket with the real one
-      setBrackets(prev => prev.map(b => 
-        b.id === optimisticBracket.id ? data : b
-      ));
+      setBrackets((prev) =>
+        prev.map((b) => (b.id === optimisticBracket.id ? data : b))
+      );
 
       setTitle("");
       setAddModal(false);
