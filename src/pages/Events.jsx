@@ -6,11 +6,15 @@ import { CiMapPin } from "react-icons/ci";
 import { AiOutlineClose } from "react-icons/ai";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useUser } from '../context/UserContext'
 
 function Events() {
   const [addModal, setAddModal] = useState(false);
   const [typeFilter, setTypeFilter] = useState("All Events");
   const [dateFilter, setDateFilter] = useState("upcoming");
+  const { events, setEvents } = useUser()
+  console.log(events)
+
   const data = [
     {
       id: 0,
@@ -57,7 +61,7 @@ function Events() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="geist-font flex flex-col min-h-screen bg-gradient-to-b from-white to-stone-50/30 pb-25 gap-2"
+    className="geist-font flex flex-col min-h-screen bg-gradient-to-b from-white to-stone-50/30 pb-25 gap-2"
     >
       <motion.div
         initial={{ y: -20, opacity: 0 }}
@@ -167,7 +171,7 @@ function Events() {
       {/* Events grid */}
       <div className="px-5 pb-5">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 max-w-7xl mx-auto">
-          {data.map((event, index) => (
+          {events.map((event, index) => (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

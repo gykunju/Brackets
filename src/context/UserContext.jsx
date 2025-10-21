@@ -14,9 +14,21 @@ export function UserProvider({ children }) {
   const [errors, setErrors] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
-  const [brackets, setBrackets] = useState([]);
+  const [brackets, setBrackets] = useState(() => {
+    // Initialize brackets from localStorage if available
+    const savedBrackets = localStorage.getItem("user_brackets");
+    return savedBrackets ? JSON.parse(savedBrackets) : [];
+  });
+  const [events, setEvents] = useState(() => {
+    const savedEvents = localStorage.getItem("user_events")
+    return savedEvents ? JSON.parse(savedEvents) : [];
+  })
   const [units, setUnits] = useState([]);
-  const [profile, setProfile] = useState(null);
+  const [profile, setProfile] = useState(() => {
+    // Initialize profile from localStorage if available
+    const savedProfile = localStorage.getItem("user_profile");
+    return savedProfile ? JSON.parse(savedProfile) : null;
+  });
 
   // Check current session
   const checkSession = async () => {
@@ -30,8 +42,24 @@ export function UserProvider({ children }) {
       if (session) {
         setUser(session.user);
         setIsLoggedIn(true);
+
+        // Fetch profile when session is restored
+        try {
+          const { data: profileData, error: profileError } = await supabase
+            .from("profile")
+            .select("*")
+            .eq("supabase_user_id", session.user.id)
+            .single();
+
+          if (!profileError && profileData) {
+            setProfile(profileData);
+          }
+        } catch (profileErr) {
+          console.error("Error fetching profile in checkSession:", profileErr);
+        }
       } else {
         setUser(null);
+        setProfile(null);
         setIsLoggedIn(false);
         navigate("/signup");
       }
@@ -43,9 +71,13 @@ export function UserProvider({ children }) {
   };
 
   useEffect(() => {
-    checkSession();
-    getBrackets();
-    getUnits();
+    // Initialize session and load data
+    const initializeApp = async () => {
+      await checkSession();
+      // Data will be loaded via auth state change or when profile is set
+    };
+
+    initializeApp();
 
     // Subscribe to auth changes
     const {
@@ -69,7 +101,9 @@ export function UserProvider({ children }) {
       }
     });
 
-    // Subscribe to real-time changes in brackets for the current profile
+    // Subscribe to real-time changes in brackets
+    // Note: Filter is not applied here because profile may not be loaded yet
+    // Filtering happens in the callback instead
     const bracketsSubscription = supabase
       .channel("brackets_changes")
       .on(
@@ -78,7 +112,6 @@ export function UserProvider({ children }) {
           event: "*",
           schema: "public",
           table: "bracket",
-          filter: profile?.id ? `profile_id=eq.${profile.id}` : undefined,
         },
         (payload) => {
           // Update brackets state based on the change
@@ -135,6 +168,36 @@ export function UserProvider({ children }) {
       if (unitsSubscription) unitsSubscription.unsubscribe();
     };
   }, []);
+
+  // Persist profile to localStorage whenever it changes
+  useEffect(() => {
+    if (profile) {
+      localStorage.setItem("user_profile", JSON.stringify(profile));
+    } else {
+      localStorage.removeItem("user_profile");
+    }
+  }, [profile]);
+
+  // Persist brackets to localStorage whenever they change
+  useEffect(() => {
+    if (brackets && brackets.length >= 0) {
+      localStorage.setItem("user_brackets", JSON.stringify(brackets));
+    }
+  }, [brackets]);
+
+  useEffect(() => {
+    if (events && events.length >= 0) {
+      localStorage.setItem('user_events', JSON.stringify(events))
+    }
+  }, [events])
+
+  // Load brackets and units when profile is available
+  useEffect(() => {
+    if (profile?.id) {
+      getBrackets(profile.id);
+      getUnits();
+    }
+  }, [profile?.id]);
 
   async function getProfile() {
     try {
@@ -196,73 +259,107 @@ export function UserProvider({ children }) {
   }
 
   async function signUp(formData) {
-    const { data, error } = await supabase.auth.signUp(formData);
-    console.log(data);
-    if (data && !error) {
-      const profileData = {
-        full_name:
-          data.user.user_metadata.first_name +
-          " " +
-          data.user.user_metadata.last_name,
-        brackets: 0,
-        courses: 0,
-        email: data.user.email,
-        supabase_user_id: data.id,
-      };
+    try {
+      const { data, error } = await supabase.auth.signUp(formData);
 
-      const { error: insertError } = await supabase
-        .from("profile")
-        .insert(profileData);
-      if (insertError) throw new Error(insertError);
+      if (error) {
+        console.error("SignUp error:", error);
+        setErrors((prev) => [...prev, error]);
+        throw error;
+      }
 
+      // supabase v2 returns the created user under data.user
+      const createdUser = data?.user;
+
+      if (!createdUser) {
+        // In some flows (email confirmation required) Supabase may not return a user object.
+        console.warn(
+          "signUp: no user returned from supabase.auth.signUp — email confirmation required"
+        );
+        navigate("/");
+        return null;
+      }
+
+      // Persist user in local state
+      setUser(createdUser);
       setIsLoggedIn(true);
+
+      // Profile will be created automatically by database trigger
+      // The auth state change listener will fetch the profile
       navigate("/");
-    } else {
-      setErrors((prev) => [...prev, error]);
-      throw new Error(error);
+
+      return createdUser;
+    } catch (err) {
+      setErrors((prev) => [...prev, err]);
+      throw err;
     }
   }
 
   async function signOut() {
-    const { error } = supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
 
     if (error) throw new Error(error);
 
+    // Clear all user data including localStorage
+    setUser(null);
+    setProfile(null);
+    setBrackets([]);
+    setUnits([]);
     setIsLoggedIn(false);
+    localStorage.removeItem("user_profile");
+    localStorage.removeItem("user_brackets");
+
     navigate("/signup");
   }
 
   const [isLoading, setIsLoading] = useState({
     brackets: false,
     units: false,
+    events: false
   });
 
-  async function getBrackets() {
+  async function getBrackets(profileId = null) {
     try {
-      // First ensure we have the profile
-      if (!profile) {
-        await getProfile();
-      }
+      // Use provided profileId or get from current user
+      let targetProfileId = profileId;
 
-      console.log(profile);
+      if (!targetProfileId) {
+        // Get the current user's profile ID
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      // Make sure profile was loaded
-      if (!profile?.id) {
-        throw new Error("No profile found");
+        if (!session?.user?.id) {
+          console.log("No session found, skipping bracket fetch");
+          return;
+        }
+
+        const { data: profileData, error: profileError } = await supabase
+          .from("profile")
+          .select("id")
+          .eq("supabase_user_id", session.user.id)
+          .single();
+
+        if (profileError || !profileData) {
+          console.error("Error fetching profile for brackets:", profileError);
+          return;
+        }
+
+        targetProfileId = profileData.id;
       }
 
       setIsLoading((prev) => ({ ...prev, brackets: true }));
 
-      // Get brackets for the current profile
+      // Get brackets for the current profile using targetProfileId
       const { data, error } = await supabase
         .from("bracket")
         .select("*")
-        .eq("user_id", profile.id)
+        .eq("user_id", targetProfileId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      setBrackets(data);
+      setBrackets(data || []);
       return data;
     } catch (error) {
       console.error("Error fetching brackets:", error.message);
@@ -289,6 +386,41 @@ export function UserProvider({ children }) {
       setErrors((prev) => [...prev, error]);
     } finally {
       setIsLoading((prev) => ({ ...prev, units: false }));
+    }
+  }
+
+  async function getEvent(profileId = null) {
+    try {
+
+        let targetProfileId = profileId
+        
+        if (!targetProfileId) {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session?.user?.id) {
+          console.log("No session found, skipping bracket fetch");
+          return;
+        }
+        const { data: profileData, error: profileError} = await supabase.from('profile').select('*').eq("supabase_user_id", session.user.id)
+        if ( profileError || !profileData) {
+          console.error("Error fetching profile for Events:", profileError);
+          return
+        }
+        targetProfileId = profileData.id
+      }
+
+      setIsLoading((prev) => ({ ...prev, events: true }));
+      
+      const { data, error } = await supabase.from('event').select("*").eq("user_id", targetProfileId)
+      
+      if (error) throw new error
+      
+      setBrackets(data || [])
+      localStorage.setItem(data)
+    } catch (error) {
+      console.error("Error fetching events:", error.message);
+      setErrors((prev) => [...prev, error]);
+    } finally {
+      setIsLoading((prev) => ({ ...prev, events: false }));
     }
   }
 
@@ -383,6 +515,8 @@ export function UserProvider({ children }) {
         brackets,
         setBrackets,
         units,
+        events,
+        setEvents,
         isLoading,
         // Data manipulation functions
         getBrackets,

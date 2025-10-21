@@ -68,18 +68,16 @@ function Signup() {
     setIsLoading(true);
     try {
       await signUp(formData);
+      // Let UserContext handle navigation after successful profile creation
     } catch (err) {
       if (err.message.includes("already registered")) {
         setErrors(["This email is already registered"]);
       } else {
         setErrors(["An error occurred during signup. Please try again."]);
       }
-    } finally {
       setIsLoading(false);
     }
   }
-
-  console.log(errors);
 
   return (
     <motion.div
@@ -179,7 +177,6 @@ function Signup() {
                 className="border rounded-lg geist-font text-gray-900 border-gray-300 p-3 text-base bg-white/50 focus:border-lime-600 focus:ring-1 focus:ring-lime-600 transition-all"
                 placeholder="Create a password"
               />
-          
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-base geist-font wght-600 text-gray-700">

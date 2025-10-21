@@ -9,47 +9,17 @@ import { useState, useEffect } from "react";
 import { useUser } from "../context/UserContext";
 
 function Brackets() {
-  const { brackets, user, setBrackets, supabase } = useUser();
+  const { brackets, user, setBrackets, supabase, profile } = useUser();
 
   const [addModal, setAddModal] = useState(false);
   const [title, setTitle] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   console.log(user)
 
-  // Set up real-time subscription for brackets
-  useEffect(() => {
-    const bracketsSubscription = supabase
-      .channel("brackets_changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "bracket",
-        },
-        (payload) => {
-          // Update brackets state based on the change
-          if (payload.eventType === "INSERT") {
-            setBrackets((prev) => [payload.new, ...prev]);
-          } else if (payload.eventType === "DELETE") {
-            setBrackets((prev) =>
-              prev.filter((bracket) => bracket.id !== payload.old.id)
-            );
-          } else if (payload.eventType === "UPDATE") {
-            setBrackets((prev) =>
-              prev.map((bracket) =>
-                bracket.id === payload.new.id ? payload.new : bracket
-              )
-            );
-          }
-        }
-      )
-      .subscribe();
 
-    return () => {
-      if (bracketsSubscription) bracketsSubscription.unsubscribe();
-    };
-  }, []);
+
+  // Real-time subscription is handled in UserContext
+  // No need for duplicate subscription here
 
   const backPage = () => {
     window.history.back();
@@ -59,48 +29,50 @@ function Brackets() {
     e.preventDefault();
     if (!title.trim()) return;
 
+    // Check if profile exists
+    if (!profile?.id) {
+      console.error("No profile found. Cannot create bracket.");
+      console.error("Profile state:", profile);
+      alert("Error: No profile found. Please refresh the page and try again.");
+      return;
+    }
+
     try {
       setIsLoading(true);
 
       const newBracket = {
         title: title.trim(),
-        created_at: new Date().toISOString(),
-        current: brackets.length === 0,
-          // Make it current if it's the first bracket
+        user_id: profile.id, // Add the profile ID
+        current: brackets.length === 0, // Make it current if it's the first bracket
       };
 
-      // Optimistically update UI
-      const optimisticBracket = {
-        ...newBracket,
-        id: `temp-${Date.now()}`, // Temporary ID  will be replaced
-      };
-      setBrackets((prev) => [optimisticBracket, ...prev]);
+      console.log("Creating bracket with data:", newBracket);
 
-      // Create the bracket in Supabase
+      // Create the bracket in Supabase (removed optimistic update to debug)
       const { data, error } = await supabase
         .from("bracket")
-        .insert([newBracket])
+        .insert(newBracket)
         .select()
         .single();
 
+      console.log("Supabase insert response:", { data, error });
+
       if (error) {
-        // If there's an error, remove the optimistic update
-        setBrackets((prev) =>
-          prev.filter((b) => b.id !== optimisticBracket.id)
-        );
+        console.error("Supabase error details:", error);
+        alert(`Error creating bracket: ${error.message}`);
         throw error;
       }
 
-      // Replace the optimistic bracket with the real one
-      setBrackets((prev) =>
-        prev.map((b) => (b.id === optimisticBracket.id ? data : b))
-      );
+      console.log("Bracket created successfully:", data);
+
+      // Add the new bracket to state
+      setBrackets((prev) => [data, ...prev]);
 
       setTitle("");
       setAddModal(false);
     } catch (error) {
-      console.error("Error adding bracket:", error.message);
-      // You might want to show an error toast here
+      console.error("Error adding bracket:", error);
+      console.error("Full error object:", JSON.stringify(error, null, 2));
     } finally {
       setIsLoading(false);
     }
@@ -215,7 +187,7 @@ function Brackets() {
               className="fixed inset-x-4 bottom-4 top-auto md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-sm z-50"
             >
               <div className="bg-white rounded-2xl shadow-lg border border-stone-200 overflow-hidden">
-                <form className="flex flex-col" onSubmit={(e) => addBracket(e)}>
+                <form className="flex flex-col" onSubmit={addBracket}>
                   <div className="flex items-center justify-between p-4 border-b border-stone-200">
                     <h2 className="geist-font wght-700 text-lg text-gray-900">
                       Add Bracket
