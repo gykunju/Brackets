@@ -8,6 +8,7 @@ import Ai_Assistant from "./pages/Ai_Assistant"
 import Brackets from "./pages/Brackets"
 import Events from "./pages/Events"
 import Units from "./pages/Units"
+import Content from "./pages/Content"
 import Home from "./pages/Home"
 import Profile from "./pages/Profile"
 import NotFound from "./pages/NotFound"
@@ -35,6 +36,7 @@ function App() {
           <Route path="ai-assistant" element={<Ai_Assistant />} />
           <Route path="brackets" element={<Brackets />} />
           <Route path="brackets/:bracket" element={<Units />} />
+          <Route path="brackets/:bracket/:unit" element={<Content />} />
           <Route path="events" element={<Events />} />
           <Route path="profile" element={<Profile />} />
           <Route path='*' element={<NotFound/>}/>

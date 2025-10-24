@@ -22,6 +22,12 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  // Skip caching for chrome-extension and other unsupported schemes
+  const url = new URL(event.request.url);
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    return;
+  }
+
   event.respondWith(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.match(event.request).then((cachedResponse) => {
@@ -39,6 +45,9 @@ self.addEventListener("fetch", (event) => {
             cache.put(event.request, networkResponse.clone());
           }
           return networkResponse;
+        }).catch(() => {
+          // Return a fallback response on fetch error
+          return cachedResponse || new Response('Offline');
         });
       });
     })

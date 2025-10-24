@@ -1,90 +1,148 @@
 import { IoMdArrowBack } from "react-icons/io";
-import { useLocation, useParams } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { LuNotebookText } from "react-icons/lu";
-import { GrFormNext } from "react-icons/gr";
-import { GrAdd } from "react-icons/gr";
+import { GrFormNext, GrAdd } from "react-icons/gr";
 import { AiOutlineClose } from "react-icons/ai";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useUser } from "../context/UserContext";
 
 function Units() {
-  const { units, brackets, supabase } = useUser();
+  const navigate = useNavigate();
+  const { brackets, supabase } = useUser();
   const [filteredUnits, setFilteredUnits] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [addModal, setAddModal] = useState(false);
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [error, setError] = useState(null);
 
   const backPage = () => {
     window.history.back();
   };
 
   const location = useLocation();
-  const bracketTitle = location.pathname
-    .replace("%20", " ")
-    .replace("/brackets/", "");
+  const bracketTitle = decodeURIComponent(
+    location.pathname.replace("/brackets/", "")
+  );
 
   // Find the current bracket
   const currentBracket = brackets.find((b) => b.title === bracketTitle);
 
   // Fetch units for the current bracket
   useEffect(() => {
+    let isMounted = true; // Cleanup flag to prevent race conditions
+
+    console.log('Units useEffect triggered');
+    console.log('Brackets loaded:', brackets.length);
+    console.log('Looking for bracket:', bracketTitle);
+    console.log('Current bracket found:', currentBracket);
+    console.log('All brackets:', brackets.map(b => b.title));
+
     async function fetchUnits() {
-      if (!currentBracket) return;
+      if (!isMounted) return;
+
+      setError(null);
+
+      // Wait for brackets to load - but set a timeout
+      if (brackets.length === 0) {
+        console.log('Waiting for brackets to load...');
+        setIsLoading(true);
+        // Set a timeout to stop waiting after 5 seconds
+        setTimeout(() => {
+          if (isMounted && brackets.length === 0) {
+            console.error('Timeout waiting for brackets');
+            setError('Failed to load brackets. Please refresh the page.');
+            setIsLoading(false);
+          }
+        }, 5000);
+        return;
+      }
+
+      if (!currentBracket) {
+        console.log('Bracket not found, stopping loading');
+        if (isMounted) {
+          setError(`Bracket "${bracketTitle}" not found. Please go back and try again.`);
+          setIsLoading(false);
+        }
+        return;
+      }
 
       try {
-        setIsLoading(true);
+        console.log('Fetching units for bracket:', currentBracket.id);
+        if (isMounted) setIsLoading(true);
+
         const { data, error } = await supabase
           .from("unit")
           .select("*")
           .eq("bracket_id", currentBracket.id)
           .order("created_at", { ascending: false });
 
-        if (error) throw error;
+        console.log('Query completed. Error:', error, 'Data:', data, 'isMounted:', isMounted);
+
+        // ALWAYS update state even if unmounted - this is important for React Strict Mode
+        if (error) {
+          console.error('Supabase error:', error);
+          setError(`Failed to load units: ${error.message}`);
+          setIsLoading(false);
+          return;
+        }
+
+        console.log('Units fetched successfully:', data?.length || 0);
         setFilteredUnits(data || []);
+        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching units:", error);
-      } finally {
+        setError(`Failed to load units: ${error.message}`);
         setIsLoading(false);
       }
     }
 
     fetchUnits();
 
-    // Subscribe to changes in units for this bracket
-    const unitsSubscription = supabase
-      .channel("units_changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "unit",
-          filter: `bracket_id=eq.${currentBracket?.id}`,
-        },
-        (payload) => {
-          if (payload.eventType === "INSERT") {
-            setFilteredUnits((prev) => [payload.new, ...prev]);
-          } else if (payload.eventType === "DELETE") {
-            setFilteredUnits((prev) =>
-              prev.filter((unit) => unit.id !== payload.old.id)
-            );
-          } else if (payload.eventType === "UPDATE") {
-            setFilteredUnits((prev) =>
-              prev.map((unit) =>
-                unit.id === payload.new.id ? payload.new : unit
-              )
-            );
+    // Don't set up subscription until we have a valid bracket
+    let unitsSubscription = null;
+
+    if (currentBracket?.id) {
+      // Subscribe to changes in units for this bracket
+      unitsSubscription = supabase
+        .channel(`units_changes_${currentBracket.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "unit",
+            filter: `bracket_id=eq.${currentBracket.id}`,
+          },
+          (payload) => {
+            if (!isMounted) return;
+
+            if (payload.eventType === "INSERT") {
+              setFilteredUnits((prev) => [payload.new, ...prev]);
+            } else if (payload.eventType === "DELETE") {
+              setFilteredUnits((prev) =>
+                prev.filter((unit) => unit.id !== payload.old.id)
+              );
+            } else if (payload.eventType === "UPDATE") {
+              setFilteredUnits((prev) =>
+                prev.map((unit) =>
+                  unit.id === payload.new.id ? payload.new : unit
+                )
+              );
+            }
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe();
+    }
 
     return () => {
-      if (unitsSubscription) unitsSubscription.unsubscribe();
+      console.log('Cleanup: Unmounting Units useEffect');
+      isMounted = false;
+      if (unitsSubscription) {
+        unitsSubscription.unsubscribe();
+      }
     };
-  }, [currentBracket?.id]);
+  }, [currentBracket?.id, brackets.length, bracketTitle, supabase]);
 
   // Handle adding a new unit
   const addUnit = async (e) => {
@@ -98,7 +156,6 @@ function Units() {
         .insert([
           {
             title,
-            description,
             bracket_id: currentBracket.id,
             created_at: new Date().toISOString(),
           },
@@ -109,13 +166,19 @@ function Units() {
       if (error) throw error;
 
       setTitle("");
-      setDescription("");
       setAddModal(false);
     } catch (error) {
       console.error("Error adding unit:", error.message);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Navigate to content page for a unit
+  const openUnitContent = (unit) => {
+    navigate(`/brackets/${bracketTitle}/${unit.title}`, {
+      state: { unit, bracket: currentBracket },
+    });
   };
 
   return (
@@ -163,9 +226,35 @@ function Units() {
           addModal ? "blur-sm" : ""
         }`}
       >
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lime-800" />
+        {error ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="flex flex-col items-center justify-center py-12 text-center"
+          >
+            <div className="p-4 rounded-full bg-red-100 mb-4">
+              <LuNotebookText size={32} className="text-red-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Error Loading Units
+            </h3>
+            <p className="text-gray-600 mb-6 max-w-md">
+              {error}
+            </p>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 rounded-lg bg-lime-800 text-white hover:bg-lime-700 transition-colors shadow-sm geist-font wght-600"
+            >
+              Refresh Page
+            </motion.button>
+          </motion.div>
+        ) : isLoading ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lime-800 mb-4" />
+            <p className="text-gray-600 text-sm">Loading units...</p>
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
@@ -176,6 +265,7 @@ function Units() {
                 transition={{ delay: 0.2 + index * 0.05 }}
                 key={unit.id}
                 className="group cursor-pointer"
+                onClick={() => openUnitContent(unit)}
               >
                 <div className="flex items-center gap-4 p-4 rounded-xl bg-white border border-stone-200 shadow-sm hover:shadow-md hover:border-lime-200 transition-all relative overflow-hidden">
                   <div className="p-3 rounded-xl bg-gradient-to-br from-lime-50 to-stone-100 border border-lime-200">
@@ -187,11 +277,6 @@ function Units() {
                       <h3 className="geist-font wght-600 text-base text-gray-900 truncate pr-8">
                         {unit.title}
                       </h3>
-                      {unit.description && (
-                        <p className="text-sm text-gray-500 geist-font wght-500 truncate pr-8">
-                          {unit.description}
-                        </p>
-                      )}
                     </div>
 
                     <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -283,28 +368,11 @@ function Units() {
                       </label>
                       <input
                         id="title"
-                        placeholder="Enter unit title"
+                        placeholder="e.g., Chapter 1: Introduction"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         disabled={isLoading}
-                        className="w-full p-3 rounded-lg border border-stone-200 text-base geist-font wght-500 bg-white/50 focus:border-lime-600 focus:ring-1 focus:ring-lime-600 transition-all disabled:bg-stone-50 disabled:text-gray-500"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label
-                        htmlFor="description"
-                        className="text-sm text-gray-700 geist-font wght-600"
-                      >
-                        Description (Optional)
-                      </label>
-                      <textarea
-                        id="description"
-                        placeholder="Enter unit description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        disabled={isLoading}
-                        rows={3}
+                        required
                         className="w-full p-3 rounded-lg border border-stone-200 text-base geist-font wght-500 bg-white/50 focus:border-lime-600 focus:ring-1 focus:ring-lime-600 transition-all disabled:bg-stone-50 disabled:text-gray-500"
                       />
                     </div>
