@@ -15,9 +15,21 @@ function Profile() {
   const { signOut, profile, getProfile, user } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const backPage = () => {
     window.history.back();
+  };
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await signOut();
+    } catch (err) {
+      console.error("Logout error:", err);
+      setError("Failed to log out. Please try again.");
+      setIsLoggingOut(false);
+    }
   };
 
   useEffect(() => {
@@ -257,16 +269,19 @@ function Profile() {
           className="w-full"
         >
           <motion.button
-            onClick={() => signOut()}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-            className="w-full bg-white hover:bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-4 transition-colors group"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            whileHover={{ scale: isLoggingOut ? 1 : 1.01 }}
+            whileTap={{ scale: isLoggingOut ? 1 : 0.99 }}
+            className={`w-full bg-white hover:bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-4 transition-colors group ${
+              isLoggingOut ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
             <div className="bg-red-100 p-3 rounded-lg">
               <MdOutlineLogout size={24} className="text-red-700" />
             </div>
             <p className="text-base geist-font wght-600 text-red-600 group-hover:text-red-700 transition-colors">
-              Log Out
+              {isLoggingOut ? "Logging out..." : "Log Out"}
             </p>
           </motion.button>
         </motion.div>

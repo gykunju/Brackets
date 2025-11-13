@@ -10,7 +10,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const userContext = createContext();
 
 export function UserProvider({ children }) {
-  const navigate = useNavigate("/");
+  const navigate = useNavigate();
 
   const [errors, setErrors] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -76,12 +76,12 @@ export function UserProvider({ children }) {
         setUser(null);
         setProfile(null);
         setIsLoggedIn(false);
-        navigate("/signup");
+        // Don't navigate here - let the routing handle it
       }
     } catch (error) {
       console.error("Error checking session:", error);
       setIsLoggedIn(false);
-      navigate("/signup");
+      // Don't navigate here - let the routing handle it
     }
   };
 
@@ -116,7 +116,7 @@ export function UserProvider({ children }) {
         setUnits([]);
         setEvents([]);
         setContent([]);
-        navigate("/signup");
+        // Don't force navigate - let routing handle it
       }
     });
 
@@ -358,25 +358,29 @@ export function UserProvider({ children }) {
   }
 
   async function signOut() {
-    const { error } = await supabase.auth.signOut();
+    try {
+      const { error } = await supabase.auth.signOut();
 
-    if (error) throw new Error(error);
+      if (error) throw error;
 
-    // Clear all user data including localStorage
-    setUser(null);
-    setProfile(null);
-    setBrackets([]);
-    setUnits([]);
-    setEvents([]);
-    setContent([]);
-    setIsLoggedIn(false);
-    localStorage.removeItem("user_profile");
-    localStorage.removeItem("user_brackets");
-    localStorage.removeItem("user_units");
-    localStorage.removeItem("user_events");
-    localStorage.removeItem("user_content");
+      // Clear all user data including localStorage
+      setUser(null);
+      setProfile(null);
+      setBrackets([]);
+      setUnits([]);
+      setEvents([]);
+      setContent([]);
+      setIsLoggedIn(false);
+      localStorage.removeItem("user_profile");
+      localStorage.removeItem("user_brackets");
+      localStorage.removeItem("user_units");
+      localStorage.removeItem("user_events");
+      localStorage.removeItem("user_content");
 
-    navigate("/signup");
+      navigate("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   }
 
   async function getBrackets(profileId = null) {

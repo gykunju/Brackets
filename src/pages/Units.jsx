@@ -30,46 +30,34 @@ function Units() {
 
   // Fetch units for the current bracket
   useEffect(() => {
-    let isMounted = true; // Cleanup flag to prevent race conditions
-
-    console.log('Units useEffect triggered');
+    console.log('=== Units useEffect triggered ===');
     console.log('Brackets loaded:', brackets.length);
     console.log('Looking for bracket:', bracketTitle);
     console.log('Current bracket found:', currentBracket);
-    console.log('All brackets:', brackets.map(b => b.title));
+
+    // If no brackets loaded yet, just wait
+    if (brackets.length === 0) {
+      console.log('No brackets loaded yet, keeping loading state');
+      setIsLoading(true);
+      return;
+    }
+
+    // If brackets are loaded but bracket not found
+    if (!currentBracket) {
+      console.log('Bracket not found after brackets loaded');
+      setError(`Bracket "${bracketTitle}" not found. Please go back and try again.`);
+      setIsLoading(false);
+      return;
+    }
+
+    // We have a valid bracket, fetch units
+    let cancelled = false;
 
     async function fetchUnits() {
-      if (!isMounted) return;
-
-      setError(null);
-
-      // Wait for brackets to load - but set a timeout
-      if (brackets.length === 0) {
-        console.log('Waiting for brackets to load...');
-        setIsLoading(true);
-        // Set a timeout to stop waiting after 5 seconds
-        setTimeout(() => {
-          if (isMounted && brackets.length === 0) {
-            console.error('Timeout waiting for brackets');
-            setError('Failed to load brackets. Please refresh the page.');
-            setIsLoading(false);
-          }
-        }, 5000);
-        return;
-      }
-
-      if (!currentBracket) {
-        console.log('Bracket not found, stopping loading');
-        if (isMounted) {
-          setError(`Bracket "${bracketTitle}" not found. Please go back and try again.`);
-          setIsLoading(false);
-        }
-        return;
-      }
-
       try {
-        console.log('Fetching units for bracket:', currentBracket.id);
-        if (isMounted) setIsLoading(true);
+        console.log('Starting fetch for bracket:', currentBracket.id);
+        setIsLoading(true);
+        setError(null);
 
         const { data, error } = await supabase
           .from("unit")
@@ -77,9 +65,13 @@ function Units() {
           .eq("bracket_id", currentBracket.id)
           .order("created_at", { ascending: false });
 
-        console.log('Query completed. Error:', error, 'Data:', data, 'isMounted:', isMounted);
+        console.log('Fetch completed. Error:', error, 'Data count:', data?.length);
 
-        // ALWAYS update state even if unmounted - this is important for React Strict Mode
+        if (cancelled) {
+          console.log('Request was cancelled, ignoring results');
+          return;
+        }
+
         if (error) {
           console.error('Supabase error:', error);
           setError(`Failed to load units: ${error.message}`);
@@ -87,62 +79,58 @@ function Units() {
           return;
         }
 
-        console.log('Units fetched successfully:', data?.length || 0);
+        console.log('Setting units:', data?.length || 0);
         setFilteredUnits(data || []);
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching units:", error);
-        setError(`Failed to load units: ${error.message}`);
-        setIsLoading(false);
+        if (!cancelled) {
+          setError(`Failed to load units: ${error.message}`);
+          setIsLoading(false);
+        }
       }
     }
 
     fetchUnits();
 
-    // Don't set up subscription until we have a valid bracket
-    let unitsSubscription = null;
+    // Set up realtime subscription
+    const channel = supabase
+      .channel(`units_${currentBracket.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "unit",
+          filter: `bracket_id=eq.${currentBracket.id}`,
+        },
+        (payload) => {
+          console.log('Realtime event:', payload.eventType);
+          if (cancelled) return;
 
-    if (currentBracket?.id) {
-      // Subscribe to changes in units for this bracket
-      unitsSubscription = supabase
-        .channel(`units_changes_${currentBracket.id}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "unit",
-            filter: `bracket_id=eq.${currentBracket.id}`,
-          },
-          (payload) => {
-            if (!isMounted) return;
-
-            if (payload.eventType === "INSERT") {
-              setFilteredUnits((prev) => [payload.new, ...prev]);
-            } else if (payload.eventType === "DELETE") {
-              setFilteredUnits((prev) =>
-                prev.filter((unit) => unit.id !== payload.old.id)
-              );
-            } else if (payload.eventType === "UPDATE") {
-              setFilteredUnits((prev) =>
-                prev.map((unit) =>
-                  unit.id === payload.new.id ? payload.new : unit
-                )
-              );
-            }
+          if (payload.eventType === "INSERT") {
+            setFilteredUnits((prev) => [payload.new, ...prev]);
+          } else if (payload.eventType === "DELETE") {
+            setFilteredUnits((prev) =>
+              prev.filter((unit) => unit.id !== payload.old.id)
+            );
+          } else if (payload.eventType === "UPDATE") {
+            setFilteredUnits((prev) =>
+              prev.map((unit) =>
+                unit.id === payload.new.id ? payload.new : unit
+              )
+            );
           }
-        )
-        .subscribe();
-    }
+        }
+      )
+      .subscribe();
 
     return () => {
-      console.log('Cleanup: Unmounting Units useEffect');
-      isMounted = false;
-      if (unitsSubscription) {
-        unitsSubscription.unsubscribe();
-      }
+      console.log('=== Cleanup: Unmounting Units useEffect ===');
+      cancelled = true;
+      channel.unsubscribe();
     };
-  }, [currentBracket?.id, brackets.length, bracketTitle, supabase]);
+  }, [currentBracket?.id, brackets.length, bracketTitle]);
 
   // Handle adding a new unit
   const addUnit = async (e) => {
@@ -173,6 +161,53 @@ function Units() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    async function fetchUnits() {
+      try {
+        console.log("Starting fetch for bracket:", currentBracket.id);
+        setIsLoading(true);
+        setError(null);
+
+        const { data, error } = await supabase
+          .from("unit")
+          .select("*")
+          .eq("bracket_id", currentBracket.id)
+          .order("created_at", { ascending: false });
+
+        console.log(
+          "Fetch completed. Error:",
+          error,
+          "Data count:",
+          data?.length
+        );
+
+        if (cancelled) {
+          console.log("Request was cancelled, ignoring results");
+          return;
+        }
+
+        if (error) {
+          console.error("Supabase error:", error);
+          setError(`Failed to load units: ${error.message}`);
+          setIsLoading(false);
+          return;
+        }
+
+        console.log("Setting units:", data?.length || 0);
+        setFilteredUnits(data || []);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching units:", error);
+        if (!cancelled) {
+          setError(`Failed to load units: ${error.message}`);
+          setIsLoading(false);
+        }
+      }
+    }
+
+    fetchUnits();
+  }, [])
 
   // Navigate to content page for a unit
   const openUnitContent = (unit) => {

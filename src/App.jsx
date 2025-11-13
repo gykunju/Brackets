@@ -2,6 +2,7 @@ import { useState } from 'react'
 import './App.css'
 import { Routes, Route } from 'react-router'
 import AppLayout from './components/AppLayout'
+import Hero from "./pages/Hero"
 import Signup from "./pages/Signup"
 import Signin from "./pages/Signin"
 import Ai_Assistant from "./pages/Ai_Assistant"
@@ -23,24 +24,26 @@ function App() {
     <>
       <Routes>
         {
-          !isLoggedIn && (
+          !isLoggedIn ? (
             <>
+              <Route path="/" element={<Hero />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/signin" element={<Signin />} />
-              <Route path='*' element={<Signup/>} />
+              <Route path='*' element={<Hero/>} />
             </>
+          ) : (
+            <Route path="/" element={<AppLayout />} >
+              <Route index element={<Home/>}/>
+              <Route path="ai-assistant" element={<Ai_Assistant />} />
+              <Route path="brackets" element={<Brackets />} />
+              <Route path="brackets/:bracket" element={<Units />} />
+              <Route path="brackets/:bracket/:unit" element={<Content />} />
+              <Route path="events" element={<Events />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path='*' element={<NotFound/>}/>
+            </Route>
           )
         }
-        <Route path="/" element={<AppLayout />} >
-          <Route index element={<Home/>}/>
-          <Route path="ai-assistant" element={<Ai_Assistant />} />
-          <Route path="brackets" element={<Brackets />} />
-          <Route path="brackets/:bracket" element={<Units />} />
-          <Route path="brackets/:bracket/:unit" element={<Content />} />
-          <Route path="events" element={<Events />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path='*' element={<NotFound/>}/>
-        </Route>
       </Routes>
       <SpeedInsights />
     </>
