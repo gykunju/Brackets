@@ -21,10 +21,10 @@ function Profile() {
     window.history.back();
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     try {
       setIsLoggingOut(true);
-      await signOut();
+      signOut();
     } catch (err) {
       console.error("Logout error:", err);
       setError("Failed to log out. Please try again.");

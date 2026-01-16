@@ -2,9 +2,8 @@ import { Outlet } from 'react-router'
 import { useUser } from '../context/UserContext'
 
 function AuthLayout() {
-    const { isLoggedIn, checkSession } = useUser()
+    const { isLoggedIn } = useUser()
 
-    checkSession()
     return( 
         <>
             {!isLoggedIn && (

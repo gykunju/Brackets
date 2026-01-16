@@ -82,7 +82,7 @@ export async function sendMessage(message, chatHistory = [], userContext = {}) {
 
     // Always include context so AI stays aware of user's data throughout the conversation
     const result = await model.generateContent(contextPrompt);
-    const response = await result.response;
+    const response = result.response;
     const text = response.text();
 
     return text;
@@ -115,7 +115,7 @@ export async function analyzeImage(imageFile, prompt = "Describe this image and 
     ];
 
     const result = await visionModel.generateContent([prompt, ...imageParts]);
-    const response = await result.response;
+    const response = result.response;
     return response.text();
   } catch (error) {
     console.error("Error analyzing image:", error);

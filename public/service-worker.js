@@ -45,8 +45,9 @@ self.addEventListener("fetch", (event) => {
             cache.put(event.request, networkResponse.clone());
           }
           return networkResponse;
-        }).catch(() => {
+        }).catch((err) => {
           // Return a fallback response on fetch error
+          console.log(err)
           return cachedResponse || new Response('Offline');
         });
       });

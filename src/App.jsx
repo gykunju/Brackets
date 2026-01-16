@@ -18,7 +18,18 @@ import { useUser } from './context/UserContext'
 
 function App() {
 
-  const { isLoggedIn } = useUser()
+  const { isLoggedIn, authLoading } = useUser();
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-white to-stone-50/30">
+        <div className="relative">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-lime-200 border-t-lime-700" />
+        </div>
+        <p className="mt-4 text-gray-600 geist-font wght-500">Loading your workspace...</p>
+      </div>
+    );
+  }
 
   return (
     <>

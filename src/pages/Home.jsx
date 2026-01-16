@@ -1,56 +1,33 @@
-import { FiSettings, FiArrowRight, FiCalendar, FiClock } from "react-icons/fi";
+import {FiSettings, FiArrowRight, FiCalendar, FiClock, FiPlus } from "react-icons/fi";
 import { MdOutlineAssignmentLate } from "react-icons/md";
+import { LuBookMinus, LuCalendarDays } from "react-icons/lu";
 import { PiExam } from "react-icons/pi";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import LayoutAnimation from "../components/MotionRotate";
+import { useUser } from "../context/UserContext";
 
 function Home() {
-  const current_courses = [
-    {
-      id: 1,
-      img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGJvb2t8ZW58MHx8MHx8fDA%3D",
-      title: "Calculus II",
-    },
-    {
-      id: 2,
-      img: "https://images.unsplash.com/photo-1604866830893-c13cafa515d5?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Ym9va3N8ZW58MHx8MHx8fDA%3D",
-      title: "World History",
-    },
-    {
-      id: 3,
-      img: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8Ym9va3xlbnwwfHwwfHx8MA%3D%3D",
-      title: "Bio-Engineering",
-    },
-    {
-      id: 4,
-      img: "https://images.unsplash.com/photo-1705721357357-ab87523248f7?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGJvb2tzfGVufDB8fDB8fHww",
-      title: "Systems Programming",
-    },
-  ];
+  const navigate = useNavigate();
+  const { brackets, events, isLoading, authLoading } = useUser();
 
-  const upcoming_events = [
-    {
-      event: "systems programming ",
-      type: "exam",
-      date: new Date("2025-09-27"),
-    },
-    {
-      event: "Programming ",
-      type: "assignment",
-      date: new Date("2025-09-25"),
-    },
-    {
-      event: "Cat 1",
-      type: "exam",
-      date: new Date("2025-09-24"),
-    },
-    {
-      event: "Cat 1",
-      type: "exam",
-      date: new Date("2025-09-25"),
-    },
-  ];
+  const current_courses = brackets?.filter((course) => course.current === true) || [];
+
+  const upcoming_events = events?.filter((event) => new Date(event.date) > new Date()) || [];
+
+  const showLoading =
+    authLoading ||
+    (brackets.length === 0 && events.length === 0 && (isLoading.brackets || isLoading.events));
+
+  if (showLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="h-2 w-24 bg-stone-200 rounded mb-4"></div>
+          <div className="h-8 w-8 rounded-full border-2 border-stone-200 border-t-stone-800 animate-spin"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -134,7 +111,7 @@ function Home() {
       </div>
 
       {/* Upcoming Events */}
-      <div className="px-5 mb-10">
+      <div className="px-5 mb-10 mt-5">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -193,6 +170,11 @@ function Home() {
                 </div>
               </motion.div>
             ))}
+            {upcoming_events.length === 0 && (
+              <p className="text-center text-gray-500 mt-20">
+                No upcoming events.
+              </p>
+            )}
           </div>
         </motion.div>
       </div>

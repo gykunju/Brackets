@@ -9,9 +9,8 @@ import { useUser } from "../context/UserContext";
 
 function Units() {
   const navigate = useNavigate();
-  const { brackets, supabase } = useUser();
-  const [filteredUnits, setFilteredUnits] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { brackets, units, isLoading, setIsLoading, createUnit, supabase } =
+    useUser();
   const [addModal, setAddModal] = useState(false);
   const [title, setTitle] = useState("");
   const [error, setError] = useState(null);
@@ -28,109 +27,11 @@ function Units() {
   // Find the current bracket
   const currentBracket = brackets.find((b) => b.title === bracketTitle);
 
-  // Fetch units for the current bracket
-  useEffect(() => {
-    console.log('=== Units useEffect triggered ===');
-    console.log('Brackets loaded:', brackets.length);
-    console.log('Looking for bracket:', bracketTitle);
-    console.log('Current bracket found:', currentBracket);
+  // Filter units for the current bracket
+  const filteredUnits = units.filter(
+    (unit) => unit.bracket_id === currentBracket?.id
+  );
 
-    // If no brackets loaded yet, just wait
-    if (brackets.length === 0) {
-      console.log('No brackets loaded yet, keeping loading state');
-      setIsLoading(true);
-      return;
-    }
-
-    // If brackets are loaded but bracket not found
-    if (!currentBracket) {
-      console.log('Bracket not found after brackets loaded');
-      setError(`Bracket "${bracketTitle}" not found. Please go back and try again.`);
-      setIsLoading(false);
-      return;
-    }
-
-    // We have a valid bracket, fetch units
-    let cancelled = false;
-
-    async function fetchUnits() {
-      try {
-        console.log('Starting fetch for bracket:', currentBracket.id);
-        setIsLoading(true);
-        setError(null);
-
-        const { data, error } = await supabase
-          .from("unit")
-          .select("*")
-          .eq("bracket_id", currentBracket.id)
-          .order("created_at", { ascending: false });
-
-        console.log('Fetch completed. Error:', error, 'Data count:', data?.length);
-
-        if (cancelled) {
-          console.log('Request was cancelled, ignoring results');
-          return;
-        }
-
-        if (error) {
-          console.error('Supabase error:', error);
-          setError(`Failed to load units: ${error.message}`);
-          setIsLoading(false);
-          return;
-        }
-
-        console.log('Setting units:', data?.length || 0);
-        setFilteredUnits(data || []);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching units:", error);
-        if (!cancelled) {
-          setError(`Failed to load units: ${error.message}`);
-          setIsLoading(false);
-        }
-      }
-    }
-
-    fetchUnits();
-
-    // Set up realtime subscription
-    const channel = supabase
-      .channel(`units_${currentBracket.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "unit",
-          filter: `bracket_id=eq.${currentBracket.id}`,
-        },
-        (payload) => {
-          console.log('Realtime event:', payload.eventType);
-          if (cancelled) return;
-
-          if (payload.eventType === "INSERT") {
-            setFilteredUnits((prev) => [payload.new, ...prev]);
-          } else if (payload.eventType === "DELETE") {
-            setFilteredUnits((prev) =>
-              prev.filter((unit) => unit.id !== payload.old.id)
-            );
-          } else if (payload.eventType === "UPDATE") {
-            setFilteredUnits((prev) =>
-              prev.map((unit) =>
-                unit.id === payload.new.id ? payload.new : unit
-              )
-            );
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      console.log('=== Cleanup: Unmounting Units useEffect ===');
-      cancelled = true;
-      channel.unsubscribe();
-    };
-  }, [currentBracket?.id, brackets.length, bracketTitle]);
 
   // Handle adding a new unit
   const addUnit = async (e) => {
@@ -138,76 +39,16 @@ function Units() {
     if (!currentBracket) return;
 
     try {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from("unit")
-        .insert([
-          {
-            title,
-            bracket_id: currentBracket.id,
-            created_at: new Date().toISOString(),
-          },
-        ])
-        .select()
-        .single();
-
-      if (error) throw error;
-
+      await createUnit({
+        title,
+        bracket_id: currentBracket.id,
+      });
       setTitle("");
       setAddModal(false);
     } catch (error) {
-      console.error("Error adding unit:", error.message);
-    } finally {
-      setIsLoading(false);
+      setError(error.message);
     }
   };
-
-  useEffect(() => {
-    async function fetchUnits() {
-      try {
-        console.log("Starting fetch for bracket:", currentBracket.id);
-        setIsLoading(true);
-        setError(null);
-
-        const { data, error } = await supabase
-          .from("unit")
-          .select("*")
-          .eq("bracket_id", currentBracket.id)
-          .order("created_at", { ascending: false });
-
-        console.log(
-          "Fetch completed. Error:",
-          error,
-          "Data count:",
-          data?.length
-        );
-
-        if (cancelled) {
-          console.log("Request was cancelled, ignoring results");
-          return;
-        }
-
-        if (error) {
-          console.error("Supabase error:", error);
-          setError(`Failed to load units: ${error.message}`);
-          setIsLoading(false);
-          return;
-        }
-
-        console.log("Setting units:", data?.length || 0);
-        setFilteredUnits(data || []);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching units:", error);
-        if (!cancelled) {
-          setError(`Failed to load units: ${error.message}`);
-          setIsLoading(false);
-        }
-      }
-    }
-
-    fetchUnits();
-  }, [])
 
   // Navigate to content page for a unit
   const openUnitContent = (unit) => {
@@ -274,9 +115,7 @@ function Units() {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Error Loading Units
             </h3>
-            <p className="text-gray-600 mb-6 max-w-md">
-              {error}
-            </p>
+            <p className="text-gray-600 mb-6 max-w-md">{error}</p>
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -286,12 +125,18 @@ function Units() {
               Refresh Page
             </motion.button>
           </motion.div>
-        ) : isLoading ? (
+        ) : isLoading.units ? (
           <div className="flex flex-col items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lime-800 mb-4" />
             <p className="text-gray-600 text-sm">Loading units...</p>
           </div>
         ) : (
+          <div>
+            {/* <div>
+              <motion.button>
+                
+              </motion.button>
+            </div> */}
           <div className="grid gap-3 sm:grid-cols-2">
             {filteredUnits.map((unit, index) => (
               <motion.div
@@ -327,9 +172,10 @@ function Units() {
               </motion.div>
             ))}
           </div>
+          </div>
         )}
 
-        {!isLoading && filteredUnits.length === 0 && (
+        {!isLoading.units && filteredUnits.length === 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -406,7 +252,6 @@ function Units() {
                         placeholder="e.g., Chapter 1: Introduction"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        disabled={isLoading}
                         required
                         className="w-full p-3 rounded-lg border border-stone-200 text-base geist-font wght-500 bg-white/50 focus:border-lime-600 focus:ring-1 focus:ring-lime-600 transition-all disabled:bg-stone-50 disabled:text-gray-500"
                       />
@@ -423,13 +268,13 @@ function Units() {
                       Cancel
                     </motion.button>
                     <motion.button
-                      whileHover={{ scale: isLoading ? 1 : 1.01 }}
-                      whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                      whileHover={{ scale: isLoading.units ? 1 : 1.01 }}
+                      whileTap={{ scale: isLoading.units ? 1 : 0.98 }}
                       type="submit"
-                      disabled={isLoading || !title.trim()}
+                      disabled={isLoading.units || !title.trim()}
                       className="flex-1 py-2.5 px-4 rounded-lg bg-lime-800 text-white hover:bg-lime-700 disabled:bg-lime-800/70 geist-font wght-600 transition-colors shadow-sm"
                     >
-                      {isLoading ? "Creating..." : "Create Unit"}
+                      {isLoading.units ? "Creating..." : "Create Unit"}
                     </motion.button>
                   </div>
                 </form>

@@ -10,13 +10,15 @@ import { useUser } from "../context/UserContext";
 function Content() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { uploadContent, deleteContent, supabase } = useUser();
+  const { uploadContent, deleteContent, supabase, isLoading, setIsLoading} = useUser();
 
+
+  
   // Get unit info from route state
   const { unit, bracket } = location.state || {};
 
   const [content, setContent] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // const [isLoading, setIsLoading] = useState(true);
   const [uploadModal, setUploadModal] = useState(false);
 
   // Upload content form
@@ -37,6 +39,7 @@ function Content() {
     }
 
     fetchContent();
+    
 
     // Subscribe to content changes
     const contentSubscription = supabase
@@ -74,7 +77,7 @@ function Content() {
 
   const fetchContent = async () => {
     try {
-      setIsLoading(true);
+      setIsLoading((prev) => ({...prev, content:true}));
       const { data, error } = await supabase
         .from("content")
         .select("*")
@@ -86,15 +89,16 @@ function Content() {
     } catch (error) {
       console.error("Error fetching content:", error);
     } finally {
-      setIsLoading(false);
+      setIsLoading((prev) => ({ ...prev, content: false }));
     }
   };
 
   // Handle file upload
   const handleFileUpload = async (e) => {
     e.preventDefault();
+    console.log("here")
     if (!selectedFile || !unit) return;
-
+    
     try {
       setUploading(true);
       await uploadContent(selectedFile, unit.id, contentTitle, contentDescription);
@@ -182,9 +186,10 @@ function Content() {
           uploadModal ? "blur-sm" : ""
         }`}
       >
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lime-800" />
+        {isLoading.content ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-lime-200 border-t-lime-700" />
+            <p className="mt-3 text-sm text-gray-500">Loading content...</p>
           </div>
         ) : content.length === 0 ? (
           <motion.div
