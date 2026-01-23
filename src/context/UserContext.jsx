@@ -245,6 +245,33 @@ export function UserProvider({ children }) {
     return () => clearTimeout(timeoutId);
   }, [profile, brackets, events, units, content]);
 
+  async function updateProfile(updates) {
+    try {
+      setIsLoading((prev) => ({ ...prev, profile: true }));
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.id) throw new Error("No authenticated user");
+
+      const { data, error } = await supabase
+        .from("profile")
+        .update(updates)
+        .eq("supabase_user_id", session.user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setProfile(data);
+      return data;
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      setErrors((prev) => [...prev, error]);
+      throw error;
+    } finally {
+      setIsLoading((prev) => ({ ...prev, profile: false }));
+    }
+  }
+
   async function getProfile() {
     try {
       // First ensure we have a user
@@ -971,6 +998,7 @@ export function UserProvider({ children }) {
     profile,
     setProfile,
     getProfile,
+    updateProfile,
   }), [
     user, isLoggedIn, errors, authLoading,
     brackets, units, events, content, isLoading, profile

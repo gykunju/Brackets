@@ -89,35 +89,35 @@ function Brackets() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="geist-font flex flex-col min-h-screen bg-white"
+      className="geist-font flex flex-col min-h-screen bg-white dark:bg-stone-950 transition-colors duration-300"
     >
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="p-5 bg-white/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 z-20"
+        className="p-5 bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 dark:border-stone-800 z-20 transition-colors duration-300"
       >
         <div className="flex justify-between items-center max-w-4xl mx-auto">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="p-2 rounded-lg hover:bg-stone-100 transition-colors"
+            className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             onClick={() => backPage()}
           >
-            <IoMdArrowBack size={22} className="text-stone-700" />
+            <IoMdArrowBack size={22} className="text-stone-700 dark:text-stone-200" />
           </motion.button>
 
-          <h1 className="geist-font wght-700 text-xl text-stone-900">
+          <h1 className="geist-font wght-700 text-xl text-stone-900 dark:text-white">
             Brackets
           </h1>
 
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="p-2 rounded-lg hover:bg-stone-100 transition-colors"
+            className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             onClick={() => setAddModal((prev) => !prev)}
           >
-            <GrAdd size={22} className="text-stone-700" />
+            <GrAdd size={22} className="text-stone-700 dark:text-stone-200" />
           </motion.button>
         </div>
       </motion.div>
@@ -133,18 +133,18 @@ function Brackets() {
             >
               <Link
                 to={`/brackets/${bracket.title}`}
-                className="group flex gap-4 items-center p-5 rounded-xl bg-white border border-lime-100 shadow-sm hover:shadow-md hover:border-lime-500 transition-all relative overflow-hidden"
+                className="group flex gap-4 items-center p-5 rounded-xl bg-white dark:bg-stone-900 border border-lime-100 dark:border-stone-800 shadow-sm hover:shadow-md hover:border-lime-500 dark:hover:border-lime-700 transition-all relative overflow-hidden"
               >
-                <div className="p-3 rounded-xl bg-gradient-to-br from-lime-50 to-stone-100  border border-lime-200 group-hover:bg-lime-50 group-hover:border-lime-500 transition-colors">
-                  <LuBookMinus size={24} className="text-lime-800 group-hover:text-lime-800" />
+                <div className="p-3 rounded-xl bg-gradient-to-br from-lime-50 to-stone-100 dark:from-lime-900/20 dark:to-stone-900 border border-lime-200 dark:border-lime-900/30 group-hover:bg-lime-50 dark:group-hover:bg-lime-900/30 group-hover:border-lime-500 dark:group-hover:border-lime-600 transition-colors">
+                  <LuBookMinus size={24} className="text-lime-800 dark:text-lime-400 group-hover:text-lime-800 dark:group-hover:text-lime-400" />
                 </div>
 
-                <div className="flex-1 flex justify-between items-center gap-4">
-                  <div className="flex flex-col gap-1">
-                    <h3 className="geist-font wght-600 text-lg text-stone-900 group-hover:text-lime-900 transition-colors">
+                <div className="flex-1 flex justify-between items-center gap-4 min-w-0">
+                  <div className="flex flex-col gap-1 min-w-0">
+                    <h3 className="geist-font wght-600 text-lg text-stone-900 dark:text-white group-hover:text-lime-900 dark:group-hover:text-lime-200 transition-colors truncate">
                       {bracket.title}
                     </h3>
-                    <p className="text-sm text-stone-500">
+                    <p className="text-sm text-stone-500 dark:text-stone-400">
                       {new Date(bracket.created_at).toLocaleDateString()}
                     </p>
                   </div>
@@ -157,7 +157,7 @@ function Brackets() {
                     )}
                     
                     {/* Action Buttons */}
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                       <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
@@ -190,7 +190,7 @@ function Brackets() {
             </motion.div>
           ))}
           {brackets.length === 0 && (
-            <div className="text-center py-20 text-stone-500">
+            <div className="text-center py-20 text-stone-500 dark:text-stone-400">
               <p>No brackets found. Create one to get started.</p>
             </div>
           )}
@@ -218,10 +218,10 @@ function Brackets() {
               transition={{ duration: 0.2 }}
               className="fixed inset-x-4 bottom-4 top-auto md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-sm z-50"
             >
-              <div className="bg-white rounded-2xl shadow-xl border border-stone-200 overflow-hidden">
+              <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl border border-stone-200 dark:border-stone-800 overflow-hidden">
                 <form className="flex flex-col" onSubmit={addModal ? addBracket : handleEditBracket}>
-                  <div className="flex items-center justify-between p-4 border-b border-stone-100 bg-stone-50/50">
-                    <h2 className="geist-font wght-600 text-lg text-stone-900">
+                  <div className="flex items-center justify-between p-4 border-b border-stone-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/50">
+                    <h2 className="geist-font wght-600 text-lg text-stone-900 dark:text-white">
                       {addModal ? "Add Bracket" : "Edit Bracket"}
                     </h2>
                     <motion.button
@@ -242,7 +242,7 @@ function Brackets() {
                     <div className="flex flex-col gap-1.5">
                       <label
                         htmlFor="title"
-                        className="text-sm font-medium text-stone-700"
+                        className="text-sm font-medium text-stone-700 dark:text-stone-300"
                       >
                         Bracket Title
                       </label>
@@ -252,7 +252,7 @@ function Brackets() {
                         value={addModal ? title : editTitle}
                         onChange={(e) => addModal ? setTitle(e.target.value) : setEditTitle(e.target.value)}
                         disabled={isLoading}
-                        className="w-full p-3 rounded-lg border border-stone-200 text-base text-stone-900 bg-white focus:border-lime-500 focus:ring-4 focus:ring-lime-500/10 transition-all outline-none disabled:bg-stone-50 disabled:text-stone-400 placeholder:text-stone-400"
+                        className="w-full p-3 rounded-lg border border-stone-200 dark:border-stone-700 text-base text-stone-900 dark:text-white bg-white dark:bg-stone-800 focus:border-lime-500 focus:ring-4 focus:ring-lime-500/10 transition-all outline-none disabled:bg-stone-50 disabled:text-stone-400 dark:disabled:bg-stone-800/50 placeholder:text-stone-400"
                         autoFocus
                       />
                     </div>

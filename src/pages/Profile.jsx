@@ -9,10 +9,14 @@ import { GoPerson } from "react-icons/go";
 import { useState, useEffect } from "react";
 import { LiaQuestionCircle } from "react-icons/lia";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router";
 import { useUser } from "../context/UserContext";
+import { useTheme } from "../context/ThemeContext";
 
 function Profile() {
   const { signOut, profile, getProfile, user } = useUser();
+  const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -51,32 +55,30 @@ function Profile() {
     }
   }, []);
 
-  const [mode, setMode] = useState("light");
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.3 }}
-      className="min-h-screen flex flex-col pb-25 bg-gradient-to-b from-white to-stone-50/30"
+      className="min-h-screen flex flex-col pb-25 bg-gradient-to-b from-white to-stone-50/30 dark:from-stone-900 dark:to-stone-950 transition-colors duration-300"
     >
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="px-5 py-4 bg-white/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 z-20"
+        className="px-5 py-4 bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 dark:border-stone-800 z-20 transition-colors duration-300"
       >
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <motion.button
             whileHover={{ scale: 1.05, x: -2 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => backPage()}
-            className="p-2 rounded-lg hover:bg-stone-100 transition-colors"
+            className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
           >
-            <IoMdArrowBack size={24} className="text-gray-700" />
+            <IoMdArrowBack size={24} className="text-gray-700 dark:text-gray-200" />
           </motion.button>
-          <h2 className="geist-font wght-700 text-xl text-gray-900">Profile</h2>
+          <h2 className="geist-font wght-700 text-xl text-gray-900 dark:text-white">Profile</h2>
           <div className="w-10" /> {/* Spacer for centering */}
         </div>
       </motion.div>
@@ -123,10 +125,10 @@ function Profile() {
                   </span>
                 </motion.div>
               </motion.div>
-              <h2 className="geist-font wght-700 text-2xl text-gray-900">
+              <h2 className="geist-font wght-700 text-2xl text-gray-900 dark:text-white">
                 {profile.full_name}
               </h2>
-              <p className="geist-font wght-500 text-gray-500 mt-1">
+              <p className="geist-font wght-500 text-gray-500 dark:text-gray-400 mt-1">
                 {profile.email}
               </p>
               {profile.courses > 0 || profile.brackets > 0 ? (
@@ -141,7 +143,7 @@ function Profile() {
                     <p className="text-2xl font-bold text-lime-800">
                       {profile.courses}
                     </p>
-                    <p className="text-sm text-gray-600">Courses</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Courses</p>
                   </div>
                 </div>
               ) : null}
@@ -156,24 +158,24 @@ function Profile() {
           className="w-full"
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="geist-font wght-700 text-lg text-gray-600">
+            <h2 className="geist-font wght-700 text-lg text-gray-600 dark:text-gray-300">
               SETTINGS
             </h2>
           </div>
-          <div className="bg-white border border-stone-200 rounded-xl shadow-sm flex flex-col divide-y divide-stone-100">
+          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl shadow-sm flex flex-col divide-y divide-stone-100 dark:divide-stone-800 transition-colors duration-300">
             <motion.div
-              whileHover={{ backgroundColor: "#F5F5F4" }}
+              whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
               className="flex gap-4 items-center p-4 transition-colors"
             >
-              <div className="bg-lime-100 p-3 rounded-lg">
-                <HiOutlineBell size={24} className="text-lime-800" />
+              <div className="bg-lime-100 dark:bg-lime-900/30 p-3 rounded-lg">
+                <HiOutlineBell size={24} className="text-lime-800 dark:text-lime-400" />
               </div>
               <div className="flex justify-between w-full items-center">
                 <div>
-                  <h3 className="geist-font wght-600 text-base text-gray-900">
+                  <h3 className="geist-font wght-600 text-base text-gray-900 dark:text-white">
                     Notifications
                   </h3>
-                  <p className="geist-font wght-500 text-sm text-gray-500">
+                  <p className="geist-font wght-500 text-sm text-gray-500 dark:text-gray-400">
                     Enable or disable notifications
                   </p>
                 </div>
@@ -185,31 +187,30 @@ function Profile() {
             </motion.div>
 
             <motion.div
-              whileHover={{ backgroundColor: "#F5F5F4" }}
+              whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
               className="flex gap-4 items-center p-4 transition-colors"
             >
-              <div className="bg-lime-100 p-3 rounded-lg">
-                {mode === "light" ? (
-                  <CiLight size={24} className="text-lime-800" />
+              <div className="bg-lime-100 dark:bg-lime-900/30 p-3 rounded-lg">
+                {theme === "light" ? (
+                  <CiLight size={24} className="text-lime-800 dark:text-lime-400" />
                 ) : (
-                  <CiDark size={24} className="text-lime-800" />
+                  <CiDark size={24} className="text-lime-800 dark:text-lime-400" />
                 )}
               </div>
               <div className="flex justify-between w-full items-center">
                 <div>
-                  <h3 className="geist-font wght-600 text-base text-gray-900">
+                  <h3 className="geist-font wght-600 text-base text-gray-900 dark:text-white">
                     App Theme
                   </h3>
-                  <p className="geist-font wght-500 text-sm text-gray-500">
+                  <p className="geist-font wght-500 text-sm text-gray-500 dark:text-gray-400">
                     Choose between light and dark mode
                   </p>
                 </div>
                 <label className="switch">
                   <input
                     type="checkbox"
-                    onChange={() =>
-                      setMode(mode === "light" ? "dark" : "light")
-                    }
+                    checked={theme === "dark"}
+                    onChange={toggleTheme}
                   />
                   <span className="slider round"></span>
                 </label>
@@ -217,44 +218,45 @@ function Profile() {
             </motion.div>
 
             <motion.div
-              whileHover={{ backgroundColor: "#F5F5F4" }}
-              className="flex gap-4 items-center p-4 transition-colors"
+              whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
+              onClick={() => navigate("/profile/account")}
+              className="flex gap-4 items-center p-4 transition-colors cursor-pointer"
             >
-              <div className="bg-lime-100 p-3 rounded-lg">
-                <GoPerson size={24} className="text-lime-800" />
+              <div className="bg-lime-100 dark:bg-lime-900/30 p-3 rounded-lg">
+                <GoPerson size={24} className="text-lime-800 dark:text-lime-400" />
               </div>
               <div className="flex justify-between w-full items-center">
                 <div>
-                  <h3 className="geist-font wght-600 text-base text-gray-900">
+                  <h3 className="geist-font wght-600 text-base text-gray-900 dark:text-white">
                     Account
                   </h3>
-                  <p className="geist-font wght-500 text-sm text-gray-500">
+                  <p className="geist-font wght-500 text-sm text-gray-500 dark:text-gray-400">
                     Manage your account details
                   </p>
                 </div>
-                <motion.button whileHover={{ x: 2 }} className="text-lime-800">
+                <motion.button whileHover={{ x: 2 }} className="text-lime-800 dark:text-lime-400">
                   <FiArrowRight size={20} />
                 </motion.button>
               </div>
             </motion.div>
 
             <motion.div
-              whileHover={{ backgroundColor: "#F5F5F4" }}
+              whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
               className="flex gap-4 items-center p-4 transition-colors"
             >
-              <div className="bg-lime-100 p-3 rounded-lg">
-                <LiaQuestionCircle size={24} className="text-lime-800" />
+              <div className="bg-lime-100 dark:bg-lime-900/30 p-3 rounded-lg">
+                <LiaQuestionCircle size={24} className="text-lime-800 dark:text-lime-400" />
               </div>
               <div className="flex justify-between w-full items-center">
                 <div>
-                  <h3 className="geist-font wght-600 text-base text-gray-900">
+                  <h3 className="geist-font wght-600 text-base text-gray-900 dark:text-white">
                     Help ＆ Support
                   </h3>
-                  <p className="geist-font wght-500 text-sm text-gray-500">
+                  <p className="geist-font wght-500 text-sm text-gray-500 dark:text-gray-400">
                     Get help and support
                   </p>
                 </div>
-                <motion.button whileHover={{ x: 2 }} className="text-lime-800">
+                <motion.button whileHover={{ x: 2 }} className="text-lime-800 dark:text-lime-400">
                   <FiArrowRight size={20} />
                 </motion.button>
               </div>
@@ -273,14 +275,14 @@ function Profile() {
             disabled={isLoggingOut}
             whileHover={{ scale: isLoggingOut ? 1 : 1.01 }}
             whileTap={{ scale: isLoggingOut ? 1 : 0.99 }}
-            className={`w-full bg-white hover:bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-4 transition-colors group ${
+            className={`w-full bg-white dark:bg-stone-900 hover:bg-red-50 dark:hover:bg-red-900/10 border border-red-200 dark:border-red-900/30 rounded-xl p-4 flex items-center gap-4 transition-colors group ${
               isLoggingOut ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
-            <div className="bg-red-100 p-3 rounded-lg">
-              <MdOutlineLogout size={24} className="text-red-700" />
+            <div className="bg-red-100 dark:bg-red-900/20 p-3 rounded-lg">
+              <MdOutlineLogout size={24} className="text-red-700 dark:text-red-400" />
             </div>
-            <p className="text-base geist-font wght-600 text-red-600 group-hover:text-red-700 transition-colors">
+            <p className="text-base geist-font wght-600 text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors">
               {isLoggingOut ? "Logging out..." : "Log Out"}
             </p>
           </motion.button>

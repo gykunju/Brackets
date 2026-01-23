@@ -141,41 +141,41 @@ function Content() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="geist-font flex flex-col min-h-screen bg-gradient-to-b from-white to-stone-50/30 pb-25"
+      className="geist-font flex flex-col min-h-screen bg-gradient-to-b from-white to-stone-50/30 dark:from-stone-900 dark:to-stone-950 pb-25 transition-colors duration-300"
     >
       {/* Header */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="p-5 bg-white/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 z-20"
+        className="p-5 bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 dark:border-stone-800 z-20 transition-colors duration-300"
       >
         <div className="flex justify-between items-center max-w-4xl mx-auto">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="p-2 rounded-lg hover:bg-stone-100 transition-colors"
+            className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             onClick={backPage}
           >
-            <IoMdArrowBack size={22} className="text-gray-700" />
+            <IoMdArrowBack size={22} className="text-gray-700 dark:text-gray-200" />
           </motion.button>
 
           <div className="flex flex-col items-center">
-            <h1 className="geist-font wght-700 text-xl text-gray-900">
+            <h1 className="geist-font wght-700 text-xl text-gray-900 dark:text-white">
               {unit.title}
             </h1>
             {bracket && (
-              <p className="text-sm text-gray-500">{bracket.title}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{bracket.title}</p>
             )}
           </div>
 
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="p-2 rounded-lg hover:bg-stone-100 transition-colors"
+            className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             onClick={() => setUploadModal(true)}
           >
-            <GrAdd size={22} className="text-gray-700" />
+            <GrAdd size={22} className="text-gray-700 dark:text-gray-200" />
           </motion.button>
         </div>
       </motion.div>
@@ -198,13 +198,13 @@ function Content() {
             transition={{ delay: 0.2 }}
             className="flex flex-col items-center justify-center py-12 text-center"
           >
-            <div className="p-4 rounded-full bg-stone-100 mb-4">
+            <div className="p-4 rounded-full bg-stone-100 dark:bg-stone-800 mb-4">
               <FiFile size={32} className="text-gray-400" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
               No Content Yet
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
               Start by uploading study materials for this unit
             </p>
             <motion.button
@@ -226,29 +226,29 @@ function Content() {
                 key={item.id}
                 className="group"
               >
-                <div className="flex items-center gap-4 p-4 rounded-xl bg-white border border-stone-200 shadow-sm hover:shadow-md hover:border-lime-200 transition-all">
-                  <div className="p-3 rounded-xl bg-gradient-to-br from-lime-50 to-stone-100 border border-lime-200">
+                <div className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm hover:shadow-md hover:border-lime-200 dark:hover:border-lime-700 transition-all">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-lime-50 to-stone-100 dark:from-lime-900/20 dark:to-stone-900 border border-lime-200 dark:border-lime-900/30">
                     {item.file_type === "pdf" ? (
-                      <FiFile size={24} className="text-red-600" />
+                      <FiFile size={24} className="text-red-600 dark:text-red-400" />
                     ) : item.file_type === "word" ? (
-                      <FaFileWord size={24} className="text-blue-700" />
+                      <FaFileWord size={24} className="text-blue-700 dark:text-blue-400" />
                     ) : item.file_type === "powerpoint" ? (
-                      <FaFilePowerpoint size={24} className="text-orange-600" />
+                      <FaFilePowerpoint size={24} className="text-orange-600 dark:text-orange-400" />
                     ) : (
-                      <FiImage size={24} className="text-blue-600" />
+                      <FiImage size={24} className="text-blue-600 dark:text-blue-400" />
                     )}
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <h3 className="geist-font wght-600 text-base text-gray-900">
+                    <h3 className="geist-font wght-600 text-base text-gray-900 dark:text-white">
                       {item.title}
                     </h3>
                     {item.description && (
-                      <p className="text-sm text-gray-600 geist-font wght-500 mt-0.5">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 geist-font wght-500 mt-0.5">
                         {item.description}
                       </p>
                     )}
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                       {item.file_name} • {(item.file_size / 1024).toFixed(1)} KB
                     </p>
                   </div>
@@ -258,7 +258,7 @@ function Content() {
                       href={item.file_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 rounded-lg hover:bg-lime-100 text-gray-600 hover:text-lime-800 transition-colors"
+                      className="p-2 rounded-lg hover:bg-lime-100 dark:hover:bg-lime-900/30 text-gray-600 dark:text-gray-400 hover:text-lime-800 dark:hover:text-lime-400 transition-colors"
                     >
                       <FiFile size={18} />
                     </a>
@@ -266,7 +266,7 @@ function Content() {
                       onClick={() =>
                         handleDeleteContent(item.id, item.file_url)
                       }
-                      className="p-2 rounded-lg hover:bg-red-100 text-gray-600 hover:text-red-600 transition-colors"
+                      className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                     >
                       <FiTrash2 size={18} />
                     </button>
@@ -297,10 +297,10 @@ function Content() {
               transition={{ duration: 0.2 }}
               className="fixed inset-x-4 bottom-4 top-auto md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-md z-50"
             >
-              <div className="bg-white rounded-2xl shadow-lg border border-stone-200 overflow-hidden">
+              <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
                 <form className="flex flex-col" onSubmit={handleFileUpload}>
-                  <div className="flex items-center justify-between p-4 border-b border-stone-200">
-                    <h2 className="geist-font wght-700 text-lg text-gray-900">
+                  <div className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-stone-800">
+                    <h2 className="geist-font wght-700 text-lg text-gray-900 dark:text-white">
                       Upload Content
                     </h2>
                     <motion.button
@@ -317,7 +317,7 @@ function Content() {
 
                   <div className="p-4 flex flex-col gap-4">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-sm text-gray-700 geist-font wght-600">
+                      <label className="text-sm text-gray-700 dark:text-gray-300 geist-font wght-600">
                         Content Title
                       </label>
                       <input
@@ -326,12 +326,12 @@ function Content() {
                         onChange={(e) => setContentTitle(e.target.value)}
                         disabled={uploading}
                         required
-                        className="w-full p-3 rounded-lg border border-stone-200 text-base geist-font wght-500 bg-white/50 focus:border-lime-600 focus:ring-1 focus:ring-lime-600 transition-all"
+                        className="w-full p-3 rounded-lg border border-stone-200 dark:border-stone-700 text-base geist-font wght-500 bg-white/50 dark:bg-stone-800 dark:text-white focus:border-lime-600 focus:ring-1 focus:ring-lime-600 transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600"
                       />
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-sm text-gray-700 geist-font wght-600">
+                      <label className="text-sm text-gray-700 dark:text-gray-300 geist-font wght-600">
                         Description (Optional)
                       </label>
                       <textarea
@@ -340,12 +340,12 @@ function Content() {
                         onChange={(e) => setContentDescription(e.target.value)}
                         disabled={uploading}
                         rows={2}
-                        className="w-full p-3 rounded-lg border border-stone-200 text-base geist-font wght-500 bg-white/50 focus:border-lime-600 focus:ring-1 focus:ring-lime-600 transition-all"
+                        className="w-full p-3 rounded-lg border border-stone-200 dark:border-stone-700 text-base geist-font wght-500 bg-white/50 dark:bg-stone-800 dark:text-white focus:border-lime-600 focus:ring-1 focus:ring-lime-600 transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600"
                       />
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-sm text-gray-700 geist-font wght-600">
+                      <label className="text-sm text-gray-700 dark:text-gray-300 geist-font wght-600">
                         File (PDF, Word, PowerPoint, or Image - max 10MB)
                       </label>
                       <input
@@ -354,10 +354,10 @@ function Content() {
                         onChange={(e) => setSelectedFile(e.target.files[0])}
                         disabled={uploading}
                         required
-                        className="w-full p-3 rounded-lg border border-stone-200 text-base geist-font wght-500 bg-white/50 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-lime-50 file:text-lime-800 hover:file:bg-lime-100"
+                        className="w-full p-3 rounded-lg border border-stone-200 dark:border-stone-700 text-base geist-font wght-500 bg-white/50 dark:bg-stone-800 dark:text-white file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-lime-50 dark:file:bg-lime-900/30 file:text-lime-800 dark:file:text-lime-400 hover:file:bg-lime-100 dark:hover:file:bg-lime-900/50"
                       />
                       {selectedFile && (
-                        <p className="text-xs text-gray-600 mt-1">
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                           Selected: {selectedFile.name} (
                           {(selectedFile.size / 1024).toFixed(1)} KB)
                         </p>
@@ -365,13 +365,13 @@ function Content() {
                     </div>
                   </div>
 
-                  <div className="flex gap-3 p-4 border-t border-stone-200">
+                  <div className="flex gap-3 p-4 border-t border-stone-200 dark:border-stone-800">
                     <motion.button
                       whileTap={{ scale: 0.98 }}
                       type="button"
                       onClick={() => setUploadModal(false)}
                       disabled={uploading}
-                      className="flex-1 py-2.5 px-4 rounded-lg border border-stone-200 text-gray-700 hover:bg-stone-50 geist-font wght-600 transition-colors disabled:opacity-50"
+                      className="flex-1 py-2.5 px-4 rounded-lg border border-stone-200 dark:border-stone-700 text-gray-700 dark:text-gray-300 hover:bg-stone-50 dark:hover:bg-stone-800 geist-font wght-600 transition-colors disabled:opacity-50"
                     >
                       Cancel
                     </motion.button>
@@ -382,7 +382,7 @@ function Content() {
                       disabled={
                         uploading || !contentTitle.trim() || !selectedFile
                       }
-                      className="flex-1 py-2.5 px-4 rounded-lg bg-lime-800 text-white hover:bg-lime-700 disabled:bg-lime-800/70 geist-font wght-600 transition-colors shadow-sm"
+                      className="flex-1 py-2.5 px-4 rounded-lg bg-lime-800 dark:bg-lime-700 text-white hover:bg-lime-700 dark:hover:bg-lime-600 disabled:bg-lime-800/70 geist-font wght-600 transition-colors shadow-sm"
                     >
                       {uploading ? "Uploading..." : "Upload"}
                     </motion.button>

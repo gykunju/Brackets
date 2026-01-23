@@ -1,4 +1,9 @@
 @import "tailwindcss";
+@variant dark (&:where(.dark, .dark *));
+
+body {
+  @apply bg-white dark:bg-stone-950 transition-colors duration-300;
+}
 
 /* Base Geist font wrapper that uses a CSS variable for weight. */
 .geist-font {
