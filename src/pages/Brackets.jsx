@@ -140,22 +140,18 @@ function Brackets() {
                 </div>
 
                 <div className="flex-1 flex justify-between items-center gap-4 min-w-0">
-                  <div className="flex flex-col gap-1 min-w-0">
+                  <div className="flex flex-col gap-1 min-w-0 items-start">
                     <h3 className="geist-font wght-600 text-lg text-stone-900 dark:text-white group-hover:text-lime-900 dark:group-hover:text-lime-200 transition-colors truncate">
                       {bracket.title}
                     </h3>
-                    <p className="text-sm text-stone-500 dark:text-stone-400">
-                      {new Date(bracket.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    {bracket.current && (
+                     {bracket.current && (
                       <span className="px-2 py-0.5 rounded-full text-xs bg-lime-100 text-lime-800 font-medium">
                         Current
                       </span>
                     )}
-                    
+                  </div>
+
+                  <div className="flex items-center gap-3">
                     {/* Action Buttons */}
                     <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                       <motion.button

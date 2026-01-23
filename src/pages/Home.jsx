@@ -91,11 +91,10 @@ function Home() {
                   tabIndex={0}
                   aria-label={course.title}
                 >
-                  <div className="w-full h-48 overflow-hidden">
-                    <img
-                      src={course.img}
-                      alt={`${course.title} cover`}
-                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                  <div className="w-full h-48 overflow-hidden bg-gradient-to-br from-lime-50 to-stone-100 dark:from-lime-900/20 dark:to-stone-900 flex items-center justify-center group-hover:bg-lime-50 dark:group-hover:bg-lime-900/30 transition-colors">
+                    <LuBookMinus 
+                      className="text-lime-800 dark:text-lime-400 group-hover:text-lime-600 dark:group-hover:text-lime-300 transform group-hover:scale-110 transition-transform duration-300" 
+                      size={64} 
                     />
                   </div>
                   <div className="p-4">
