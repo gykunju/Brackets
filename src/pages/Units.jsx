@@ -1,6 +1,6 @@
 import { IoMdArrowBack } from "react-icons/io";
 import { useLocation, useNavigate } from "react-router";
-import { LuNotebookText } from "react-icons/lu";
+import { LuNotebookText, LuPencil, LuTrash2 } from "react-icons/lu";
 import { GrFormNext, GrAdd } from "react-icons/gr";
 import { AiOutlineClose } from "react-icons/ai";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,10 +9,13 @@ import { useUser } from "../context/UserContext";
 
 function Units() {
   const navigate = useNavigate();
-  const { brackets, units, isLoading, setIsLoading, createUnit, supabase } =
+  const { brackets, units, isLoading, setIsLoading, createUnit, updateUnit, deleteUnit, supabase } =
     useUser();
   const [addModal, setAddModal] = useState(false);
+  const [editModal, setEditModal] = useState(false);
   const [title, setTitle] = useState("");
+  const [editTitle, setEditTitle] = useState("");
+  const [selectedUnit, setSelectedUnit] = useState(null);
   const [error, setError] = useState(null);
 
   const backPage = () => {
@@ -48,6 +51,45 @@ function Units() {
     } catch (error) {
       setError(error.message);
     }
+  };
+
+  // Handle editing a unit
+  const handleEditUnit = async (e) => {
+    e.preventDefault();
+    if (!editTitle.trim() || !selectedUnit) return;
+
+    try {
+      await updateUnit(selectedUnit.id, {
+        title: editTitle.trim(),
+      });
+      setEditModal(false);
+      setSelectedUnit(null);
+      setEditTitle("");
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  // Handle deleting a unit
+  const handleDeleteUnit = async (id, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (window.confirm("Are you sure you want to delete this unit? All content inside will be lost.")) {
+      try {
+        await deleteUnit(id);
+      } catch (error) {
+        setError("Failed to delete unit");
+      }
+    }
+  };
+
+  const openEditModal = (unit, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedUnit(unit);
+    setEditTitle(unit.title);
+    setEditModal(true);
   };
 
   // Navigate to content page for a unit
@@ -99,7 +141,7 @@ function Units() {
       {/* Units Grid */}
       <div
         className={`max-w-4xl mx-auto w-full px-5 py-6 ${
-          addModal ? "blur-sm" : ""
+          addModal || editModal ? "blur-sm" : ""
         }`}
       >
         {error ? (
@@ -132,11 +174,6 @@ function Units() {
           </div>
         ) : (
           <div>
-            {/* <div>
-              <motion.button>
-                
-              </motion.button>
-            </div> */}
           <div className="grid gap-3 sm:grid-cols-2">
             {filteredUnits.map((unit, index) => (
               <motion.div
@@ -147,19 +184,41 @@ function Units() {
                 className="group cursor-pointer"
                 onClick={() => openUnitContent(unit)}
               >
-                <div className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm hover:shadow-md hover:border-lime-200 dark:hover:border-lime-700 transition-all relative overflow-hidden">
+                <div className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm hover:shadow-md hover:border-lime-200 dark:hover:border-lime-700 transition-all relative overflow-hidden h-full">
                   <div className="p-3 rounded-xl bg-gradient-to-br from-lime-50 to-stone-100 dark:from-lime-900/20 dark:to-stone-900 border border-lime-200 dark:border-lime-900/30">
                     <LuNotebookText size={24} className="text-lime-800 dark:text-lime-400" />
                   </div>
 
                   <div className="flex-1 flex items-center justify-between min-w-0">
-                    <div className="flex flex-col gap-0.5">
-                      <h3 className="geist-font wght-600 text-base text-gray-900 dark:text-white truncate pr-8">
+                    <div className="flex flex-col gap-0.5 min-w-0">
+                      <h3 className="geist-font wght-600 text-base text-gray-900 dark:text-white truncate pr-4">
                         {unit.title}
                       </h3>
                     </div>
 
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                    <div className="flex items-center gap-2">
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={(e) => openEditModal(unit, e)}
+                          className="p-2 text-stone-400 hover:text-stone-700 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg transition-colors"
+                          title="Edit Unit"
+                        >
+                          <LuPencil size={18} />
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={(e) => handleDeleteUnit(unit.id, e)}
+                          className="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                          title="Delete Unit"
+                        >
+                          <LuTrash2 size={18} />
+                        </motion.button>
+                      </div>
+
                       <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-stone-50 dark:bg-stone-800 group-hover:bg-lime-50 dark:group-hover:bg-lime-900/30 transition-colors">
                         <GrFormNext
                           size={20}
@@ -203,9 +262,9 @@ function Units() {
         )}
       </div>
 
-      {/* Add Unit Modal */}
+      {/* Add/Edit Unit Modal */}
       <AnimatePresence>
-        {addModal && (
+        {(addModal || editModal) && (
           <>
             <motion.div
               initial={{ opacity: 0 }}
@@ -213,7 +272,10 @@ function Units() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm z-50"
-              onClick={() => setAddModal(false)}
+              onClick={() => {
+                setAddModal(false);
+                setEditModal(false);
+              }}
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
@@ -223,16 +285,19 @@ function Units() {
               className="fixed inset-x-4 bottom-4 top-auto md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-sm z-50"
             >
               <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
-                <form className="flex flex-col" onSubmit={addUnit}>
+                <form className="flex flex-col" onSubmit={addModal ? addUnit : handleEditUnit}>
                   <div className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-stone-800">
                     <h2 className="geist-font wght-700 text-lg text-gray-900 dark:text-white">
-                      Add Unit
+                      {addModal ? "Add Unit" : "Edit Unit"}
                     </h2>
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
                       type="button"
-                      onClick={() => setAddModal(false)}
+                      onClick={() => {
+                        setAddModal(false);
+                        setEditModal(false);
+                      }}
                       className="p-1 rounded-lg hover:bg-stone-100 text-gray-500 transition-colors"
                     >
                       <AiOutlineClose size={20} />
@@ -250,10 +315,11 @@ function Units() {
                       <input
                         id="title"
                         placeholder="e.g., Chapter 1: Introduction"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
+                        value={addModal ? title : editTitle}
+                        onChange={(e) => addModal ? setTitle(e.target.value) : setEditTitle(e.target.value)}
                         required
                         className="w-full p-3 rounded-lg border border-stone-200 dark:border-stone-700 text-base geist-font wght-500 bg-white/50 dark:bg-stone-800 dark:text-white focus:border-lime-600 focus:ring-1 focus:ring-lime-600 transition-all disabled:bg-stone-50 disabled:text-gray-500 placeholder:text-gray-400 dark:placeholder:text-gray-600"
+                        autoFocus
                       />
                     </div>
                   </div>
@@ -262,7 +328,10 @@ function Units() {
                     <motion.button
                       whileTap={{ scale: 0.98 }}
                       type="button"
-                      onClick={() => setAddModal(false)}
+                      onClick={() => {
+                        setAddModal(false);
+                        setEditModal(false);
+                      }}
                       className="flex-1 py-2.5 px-4 rounded-lg border border-stone-200 dark:border-stone-700 text-gray-700 dark:text-gray-300 hover:bg-stone-50 dark:hover:bg-stone-800 geist-font wght-600 transition-colors"
                     >
                       Cancel
@@ -271,10 +340,10 @@ function Units() {
                       whileHover={{ scale: isLoading.units ? 1 : 1.01 }}
                       whileTap={{ scale: isLoading.units ? 1 : 0.98 }}
                       type="submit"
-                      disabled={isLoading.units || !title.trim()}
+                      disabled={isLoading.units || (addModal ? !title.trim() : !editTitle.trim())}
                       className="flex-1 py-2.5 px-4 rounded-lg bg-lime-800 dark:bg-lime-700 text-white hover:bg-lime-700 dark:hover:bg-lime-600 disabled:bg-lime-800/70 geist-font wght-600 transition-colors shadow-sm"
                     >
-                      {isLoading.units ? "Creating..." : "Create Unit"}
+                      {isLoading.units ? "Saving..." : (addModal ? "Create Unit" : "Save Changes")}
                     </motion.button>
                   </div>
                 </form>

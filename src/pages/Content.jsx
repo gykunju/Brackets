@@ -10,15 +10,13 @@ import { useUser } from "../context/UserContext";
 function Content() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { uploadContent, deleteContent, supabase, isLoading, setIsLoading} = useUser();
+  const { uploadContent, deleteContent, supabase } = useUser();
 
-
-  
   // Get unit info from route state
   const { unit, bracket } = location.state || {};
 
   const [content, setContent] = useState([]);
-  // const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [uploadModal, setUploadModal] = useState(false);
 
   // Upload content form
@@ -77,7 +75,7 @@ function Content() {
 
   const fetchContent = async () => {
     try {
-      setIsLoading((prev) => ({...prev, content:true}));
+      setLoading(true);
       const { data, error } = await supabase
         .from("content")
         .select("*")
@@ -89,7 +87,7 @@ function Content() {
     } catch (error) {
       console.error("Error fetching content:", error);
     } finally {
-      setIsLoading((prev) => ({ ...prev, content: false }));
+      setLoading(false);
     }
   };
 
@@ -186,7 +184,7 @@ function Content() {
           uploadModal ? "blur-sm" : ""
         }`}
       >
-        {isLoading.content ? (
+        {loading ? (
           <div className="flex flex-col items-center justify-center py-12">
             <div className="animate-spin rounded-full h-10 w-10 border-4 border-lime-200 border-t-lime-700" />
             <p className="mt-3 text-sm text-gray-500">Loading content...</p>
