@@ -2,6 +2,7 @@ import { useContext, createContext, useState, useEffect, useMemo, useCallback, u
 import { useNavigate } from "react-router";
 import { createClient } from "@supabase/supabase-js";
 import { parseDocument } from "../services/documentParser";
+import { extractTextFromVisualPDF } from "../services/aiService";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -875,8 +876,21 @@ export function UserProvider({ children }) {
       ) {
         try {
           console.log(`Extracting text from ${fileType} file...`);
-          // extractedText = await parseDocument(file, fileType); // Commented out as parseDocument might prevent upload if logic missing
-          // console.log(`Extracted text length: ${extractedText?.length || 0} characters`);
+          extractedText = await parseDocument(file, fileType);
+          
+          // Fallback to Visual OCR if text is too short (likely scanned or slides)
+          if (!extractedText || extractedText.length < 200) {
+             console.log("Text extraction yielded low content (likely images/slides). Attempting Visual OCR...");
+             const ocrText = await extractTextFromVisualPDF(file);
+             if (ocrText && ocrText.length > extractedText.length) {
+                console.log("Visual OCR successful. replaced text.");
+                extractedText = `[Visual OCR Result]\n${ocrText}`;
+             }
+          }
+
+          console.log("DEBUG: Extracted text type:", typeof extractedText);
+          console.log("DEBUG: Extracted text preview:", extractedText ? extractedText.substring(0, 100) : "N/A");
+          console.log(`Extracted text length: ${extractedText?.length || 0} characters`);
         } catch (error) {
           console.error("Error extracting text:", error);
           // Continue with upload even if text extraction fails

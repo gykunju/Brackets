@@ -5,7 +5,7 @@ import { IoMdAttach, IoMdClose } from "react-icons/io";
 import { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "../context/UserContext";
-import { sendMessage, analyzeImage } from "../services/geminiService";
+import { sendMessage, analyzeImage, analyzeVisualPDF } from "../services/aiService";
 
 function Ai_Assistant() {
   const { brackets, units, content, events, supabase } = useUser();
@@ -58,13 +58,21 @@ function Ai_Assistant() {
         events,
       };
 
-      // If there's an attached image, analyze it
-      if (attachedFile && attachedFile.type.startsWith('image/')) {
-        const imageAnalysis = await analyzeImage(
-          attachedFile,
-          userMessage || "Describe this image and extract any important information from it."
-        );
-        aiResponse = imageAnalysis;
+      // If there's an attached image or PDF, analyze it
+      if (attachedFile) {
+        if (attachedFile.type.startsWith('image/')) {
+          const imageAnalysis = await analyzeImage(
+             attachedFile,
+             userMessage || "Describe this image and extract any important information from it."
+          );
+          aiResponse = imageAnalysis;
+        } else if (attachedFile.type === 'application/pdf') {
+           const pdfAnalysis = await analyzeVisualPDF(
+             attachedFile,
+             userMessage || "Describe the contents of this PDF document."
+           );
+           aiResponse = pdfAnalysis;
+        }
       } else {
         // Regular text message with context
         aiResponse = await sendMessage(userMessage, chats, userContext);
@@ -98,11 +106,11 @@ function Ai_Assistant() {
   const handleFileAttach = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Only allow images for now
-      if (file.type.startsWith('image/')) {
+      // Allow images and PDFs
+      if (file.type.startsWith('image/') || file.type === 'application/pdf') {
         setAttachedFile(file);
       } else {
-        alert("Currently, only image files are supported for attachment.");
+        alert("Currently, only image and PDF files are supported for direct attachment.");
       }
     }
   };
@@ -265,7 +273,7 @@ function Ai_Assistant() {
                 type="file"
                 ref={fileInputRef}
                 onChange={handleFileAttach}
-                accept="image/*"
+                accept="image/*,application/pdf"
                 className="hidden"
               />
               <motion.button
