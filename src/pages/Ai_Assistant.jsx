@@ -6,6 +6,8 @@ import { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from "../context/UserContext";
 import { sendMessage, analyzeImage, analyzeVisualPDF } from "../services/aiService";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 function Ai_Assistant() {
   const { brackets, units, content, events, supabase } = useUser();
@@ -194,7 +196,41 @@ function Ai_Assistant() {
                     : "bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-900 dark:text-stone-200 shadow-sm"
                 }`}
               >
-                {chat.content}
+                <div className={`prose dark:prose-invert max-w-none ${chat.speaker === "user" ? "prose-p:text-white prose-headings:text-white prose-li:text-white prose-strong:text-white" : ""}`}>
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      p: ({node, ...props}) => <p className="mb-2 last:mb-0 leading-relaxed" {...props} />,
+                      a: ({node, ...props}) => <a className="underline hover:text-lime-600 dark:hover:text-lime-400 font-medium" target="_blank" rel="noopener noreferrer" {...props} />,
+                      ul: ({node, ...props}) => <ul className="list-disc ml-4 mb-2 space-y-1" {...props} />,
+                      ol: ({node, ...props}) => <ol className="list-decimal ml-4 mb-2 space-y-1" {...props} />,
+                      li: ({node, ...props}) => <li className="pl-1" {...props} />,
+                      h1: ({node, ...props}) => <h1 className="text-xl font-bold mb-3 mt-4 first:mt-0" {...props} />,
+                      h2: ({node, ...props}) => <h2 className="text-lg font-bold mb-2 mt-3 first:mt-0" {...props} />,
+                      h3: ({node, ...props}) => <h3 className="text-base font-bold mb-2 mt-3 first:mt-0" {...props} />,
+                      strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
+                      code: ({node, inline, className, children, ...props}) => {
+                        return inline ? (
+                          <code className="bg-black/10 dark:bg-white/10 rounded px-1 py-0.5 text-sm font-mono" {...props}>
+                            {children}
+                          </code>
+                        ) : (
+                          <div className="bg-stone-900 text-stone-100 rounded-lg p-3 my-2 overflow-x-auto border border-stone-800">
+                             <code className="font-mono text-sm block min-w-full" {...props}>
+                              {children}
+                            </code>
+                          </div>
+                        )
+                      },
+                      blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-lime-500 pl-4 py-1 my-2 bg-lime-50/50 dark:bg-lime-900/10 rounded-r italic" {...props} />,
+                      table: ({node, ...props}) => <div className="overflow-x-auto my-3"><table className="min-w-full border-collapse border border-stone-200 dark:border-stone-700" {...props} /></div>,
+                      th: ({node, ...props}) => <th className="border border-stone-200 dark:border-stone-700 px-3 py-2 bg-stone-50 dark:bg-stone-800 text-left font-semibold" {...props} />,
+                      td: ({node, ...props}) => <td className="border border-stone-200 dark:border-stone-700 px-3 py-2" {...props} />,
+                    }}
+                  >
+                    {chat.content}
+                  </ReactMarkdown>
+                </div>
                 {chat.file && (
                   <div className="mt-2 text-sm opacity-75 flex items-center gap-1">
                     <IoMdAttach size={14} />

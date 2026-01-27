@@ -47,6 +47,29 @@ export function UserProvider({ children }) {
     content: false,
   });
 
+  // Persistent Storage Effects
+  useEffect(() => {
+    localStorage.setItem("user_brackets", JSON.stringify(brackets));
+  }, [brackets]);
+
+  useEffect(() => {
+    localStorage.setItem("user_units", JSON.stringify(units));
+  }, [units]);
+
+  useEffect(() => {
+    localStorage.setItem("user_events", JSON.stringify(events));
+  }, [events]);
+
+  useEffect(() => {
+    localStorage.setItem("user_content", JSON.stringify(content));
+  }, [content]);
+
+  useEffect(() => {
+    if (profile) {
+      localStorage.setItem("user_profile", JSON.stringify(profile));
+    }
+  }, [profile]);
+
   useEffect(() => {
     let authSubscription = null;
     let bracketsSubscription = null;
