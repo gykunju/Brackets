@@ -55,7 +55,7 @@ function Profile() {
     }
   }, []);
 
-  const { theme, toggleTheme } = useTheme();
+
 
   return (
     <motion.div
