@@ -122,14 +122,14 @@ function Events() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="geist-font flex flex-col min-h-screen bg-gradient-to-b from-white to-stone-50/30 dark:from-stone-900 dark:to-stone-950 pb-25 gap-2 transition-colors duration-300"
+      className="geist-font flex flex-col min-h-screen bg-gradient-to-b from-white to-stone-50/30 dark:from-stone-900 dark:to-stone-950 pb-25 gap-2"
     >
       {/* Header */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="px-5 py-4 bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 dark:border-stone-800 z-20 transition-colors duration-300"
+        className="px-5 py-4 bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 dark:border-stone-800 z-20"
       >
         <div className="flex justify-between items-center max-w-6xl mx-auto">
           <h1 className="geist-font wght-700 text-xl text-gray-900 dark:text-white">Events</h1>
@@ -139,7 +139,7 @@ function Events() {
             onClick={() => setAddModal(true)}
             className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
           >
-            <GrAdd size={22} className="text-gray-700 dark:text-gray-200" />
+            <GrAdd size={22} className="text-gray-700 dark:text-gray-300" />
           </motion.button>
         </div>
       </motion.div>
@@ -154,44 +154,40 @@ function Events() {
         >
           <motion.button
             whileTap={{ scale: 0.95 }}
-            className={`px-4 py-2.5 rounded-xl whitespace-nowrap geist-font wght-600 transition-all ${
-              typeFilter === "All Events"
-                ? "bg-lime-800 text-white shadow-sm"
-                : "bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-gray-700 dark:text-gray-300 hover:border-lime-600 dark:hover:border-lime-500"
-            }`}
+            className={`px-4 py-2.5 rounded-xl whitespace-nowrap geist-font wght-600 transition-all ${typeFilter === "All Events"
+              ? "bg-lime-800 text-white shadow-sm"
+              : "bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-gray-700 dark:text-gray-300 hover:border-lime-600"
+              }`}
             onClick={() => setTypeFilter("All Events")}
           >
             All Events
           </motion.button>
           <motion.button
             whileTap={{ scale: 0.95 }}
-            className={`px-4 py-2.5 rounded-xl whitespace-nowrap geist-font wght-600 transition-all ${
-              typeFilter === "Exam"
-                ? "bg-red-600 text-white shadow-sm"
-                : "bg-white border border-stone-200 text-gray-700 hover:border-red-400"
-            }`}
+            className={`px-4 py-2.5 rounded-xl whitespace-nowrap geist-font wght-600 transition-all ${typeFilter === "Exam"
+              ? "bg-red-600 text-white shadow-sm"
+              : "bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-gray-700 dark:text-gray-300 hover:border-red-400"
+              }`}
             onClick={() => setTypeFilter("Exam")}
           >
             Exams
           </motion.button>
           <motion.button
             whileTap={{ scale: 0.95 }}
-            className={`px-4 py-2.5 rounded-xl whitespace-nowrap geist-font wght-600 transition-all ${
-              typeFilter === "Assignment"
-                ? "bg-purple-600 text-white shadow-sm"
-                : "bg-white border border-stone-200 text-gray-700 hover:border-purple-400"
-            }`}
+            className={`px-4 py-2.5 rounded-xl whitespace-nowrap geist-font wght-600 transition-all ${typeFilter === "Assignment"
+              ? "bg-purple-600 text-white shadow-sm"
+              : "bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-gray-700 dark:text-gray-300 hover:border-purple-400"
+              }`}
             onClick={() => setTypeFilter("Assignment")}
           >
             Assignments
           </motion.button>
           <motion.button
             whileTap={{ scale: 0.95 }}
-            className={`px-4 py-2.5 rounded-xl whitespace-nowrap geist-font wght-600 transition-all ${
-              typeFilter === "Event"
-                ? "bg-blue-600 text-white shadow-sm"
-                : "bg-white border border-stone-200 text-gray-700 hover:border-blue-400"
-            }`}
+            className={`px-4 py-2.5 rounded-xl whitespace-nowrap geist-font wght-600 transition-all ${typeFilter === "Event"
+              ? "bg-blue-600 text-white shadow-sm"
+              : "bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-gray-700 dark:text-gray-300 hover:border-blue-400"
+              }`}
             onClick={() => setTypeFilter("Event")}
           >
             Events
@@ -208,22 +204,20 @@ function Events() {
       >
         <motion.button
           whileTap={{ scale: 0.95 }}
-          className={`py-2 px-4 rounded-lg geist-font wght-600 transition-all ${
-            dateFilter === "upcoming"
-              ? "bg-lime-100 dark:bg-lime-900/30 text-lime-800 dark:text-lime-400"
-              : "text-gray-600 dark:text-gray-400 hover:bg-stone-100 dark:hover:bg-stone-800"
-          }`}
+          className={`py-2 px-4 rounded-lg geist-font wght-600 transition-all ${dateFilter === "upcoming"
+            ? "bg-lime-100 text-lime-800"
+            : "text-gray-600 hover:bg-stone-100"
+            }`}
           onClick={() => setDateFilter("upcoming")}
         >
           Upcoming ({upcomingCount})
         </motion.button>
         <motion.button
           whileTap={{ scale: 0.95 }}
-          className={`py-2 px-4 rounded-lg geist-font wght-600 transition-all ${
-            dateFilter === "past"
-              ? "bg-lime-100 dark:bg-lime-900/30 text-lime-800 dark:text-lime-400"
-              : "text-gray-600 dark:text-gray-400 hover:bg-stone-100 dark:hover:bg-stone-800"
-          }`}
+          className={`py-2 px-4 rounded-lg geist-font wght-600 transition-all ${dateFilter === "past"
+            ? "bg-lime-100 text-lime-800"
+            : "text-gray-600 hover:bg-stone-100"
+            }`}
           onClick={() => setDateFilter("past")}
         >
           Past ({pastCount})
@@ -234,7 +228,7 @@ function Events() {
       <div className={`px-5 pb-5 ${addModal ? 'blur-sm' : ''}`}>
         {isLoading.events ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lime-800" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lime-800 dark:border-lime-400" />
           </div>
         ) : filteredEvents.length === 0 ? (
           <motion.div
@@ -276,13 +270,12 @@ function Events() {
                   <div className="flex items-start justify-between">
                     <motion.span
                       whileHover={{ scale: 1.05 }}
-                      className={`px-3 py-1 rounded-lg text-xs geist-font wght-600 ${
-                        event.type === "Exam"
-                          ? "bg-red-100 text-red-700"
-                          : event.type === "Assignment"
-                          ? "bg-purple-100 text-purple-700"
-                          : "bg-blue-100 text-blue-700"
-                      }`}
+                      className={`px-3 py-1 rounded-lg text-xs geist-font wght-600 ${event.type === "Exam"
+                        ? "bg-red-100 text-red-700"
+                        : event.type === "Assignment"
+                          ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                          : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                        }`}
                     >
                       {event.type}
                     </motion.span>
@@ -310,30 +303,30 @@ function Events() {
                   <div className="flex flex-wrap gap-4 mt-1">
                     {event.date && (
                       <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-blue-50">
-                          <CiCalendar size={18} className="text-blue-700" />
+                        <div className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                          <CiCalendar size={18} className="text-blue-700 dark:text-blue-400" />
                         </div>
-                        <span className="text-sm text-gray-600 geist-font wght-500">
+                        <span className="text-sm text-gray-600 dark:text-gray-400 geist-font wght-500">
                           {formatDate(event.date)}
                         </span>
                       </div>
                     )}
                     {event.time && (
                       <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-purple-50">
-                          <CiClock2 size={18} className="text-purple-700" />
+                        <div className="p-1.5 rounded-lg bg-purple-50 dark:bg-purple-900/20">
+                          <CiClock2 size={18} className="text-purple-700 dark:text-purple-400" />
                         </div>
-                        <span className="text-sm text-gray-600 geist-font wght-500">
+                        <span className="text-sm text-gray-600 dark:text-gray-400 geist-font wght-500">
                           {event.time}
                         </span>
                       </div>
                     )}
                     {event.location && (
                       <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-lime-50">
-                          <CiMapPin size={18} className="text-lime-700" />
+                        <div className="p-1.5 rounded-lg bg-lime-50 dark:bg-lime-900/20">
+                          <CiMapPin size={18} className="text-lime-700 dark:text-lime-400" />
                         </div>
-                        <span className="text-sm text-gray-600 geist-font wght-500">
+                        <span className="text-sm text-gray-600 dark:text-gray-400 geist-font wght-500">
                           {event.location}
                         </span>
                       </div>
@@ -377,7 +370,7 @@ function Events() {
                       type="button"
                       onClick={() => !submitting && setAddModal(false)}
                       disabled={submitting}
-                      className="p-1 rounded-lg hover:bg-stone-100 text-gray-500 transition-colors disabled:opacity-50"
+                      className="p-1 rounded-lg hover:bg-stone-100 text-gray-500 dark:text-gray-400 transition-colors disabled:opacity-50"
                     >
                       <AiOutlineClose size={20} />
                     </motion.button>

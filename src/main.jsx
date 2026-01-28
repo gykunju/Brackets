@@ -9,17 +9,17 @@ import { ThemeProvider } from './context/ThemeContext'
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
-      <ThemeProvider>
-        <UserProvider>
+      <UserProvider>
+        <ThemeProvider>
           <App />
-        </UserProvider>
-      </ThemeProvider>
+        </ThemeProvider>
+      </UserProvider>
     </BrowserRouter>
   </StrictMode>
 );
 
 
-if('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/service-worker.js")
   })
