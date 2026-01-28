@@ -153,7 +153,7 @@ function Home() {
                   </motion.div>
                   <div className="flex-1">
                     <h3 className="font-medium text-base text-gray-900 dark:text-white group-hover:text-lime-800 dark:group-hover:text-lime-400 transition-colors">
-                      {event.event}
+                      {event.title}
                     </h3>
                     <p className="text-sm text-lime-700 dark:text-lime-500 mt-1">
                       {event.date.toLocaleDateString()}
