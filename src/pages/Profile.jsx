@@ -55,19 +55,21 @@ function Profile() {
     }
   }, []);
 
+
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.3 }}
-      className="min-h-screen flex flex-col pb-25 bg-gradient-to-b from-white to-stone-50/30 dark:from-stone-900 dark:to-stone-950 transition-colors duration-300"
+      className="min-h-screen flex flex-col pb-25 bg-gradient-to-b from-white to-stone-50/30 dark:from-stone-900 dark:to-stone-950"
     >
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="px-5 py-4 bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 dark:border-stone-800 z-20 transition-colors duration-300"
+        className="px-5 py-4 bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 dark:border-stone-800 z-20"
       >
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <motion.button
@@ -162,7 +164,7 @@ function Profile() {
               SETTINGS
             </h2>
           </div>
-          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl shadow-sm flex flex-col divide-y divide-stone-100 dark:divide-stone-800 transition-colors duration-300">
+          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl shadow-sm flex flex-col divide-y divide-stone-100 dark:divide-stone-800">
             <motion.div
               whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
               className="flex gap-4 items-center p-4 transition-colors"
@@ -190,9 +192,9 @@ function Profile() {
               whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
               className="flex gap-4 items-center p-4 transition-colors"
             >
-              <div className="bg-lime-100 dark:bg-lime-900/30 p-3 rounded-lg">
+              <div className="bg-lime-100 p-3 rounded-lg">
                 {theme === "light" ? (
-                  <CiLight size={24} className="text-lime-800 dark:text-lime-400" />
+                  <CiLight size={24} className="text-lime-800" />
                 ) : (
                   <CiDark size={24} className="text-lime-800 dark:text-lime-400" />
                 )}
@@ -209,8 +211,8 @@ function Profile() {
                 <label className="switch">
                   <input
                     type="checkbox"
-                    checked={theme === "dark"}
                     onChange={toggleTheme}
+                    checked={theme === "dark"}
                   />
                   <span className="slider round"></span>
                 </label>
@@ -275,9 +277,8 @@ function Profile() {
             disabled={isLoggingOut}
             whileHover={{ scale: isLoggingOut ? 1 : 1.01 }}
             whileTap={{ scale: isLoggingOut ? 1 : 0.99 }}
-            className={`w-full bg-white dark:bg-stone-900 hover:bg-red-50 dark:hover:bg-red-900/10 border border-red-200 dark:border-red-900/30 rounded-xl p-4 flex items-center gap-4 transition-colors group ${
-              isLoggingOut ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className={`w-full bg-white dark:bg-stone-900 hover:bg-red-50 dark:hover:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-xl p-4 flex items-center gap-4 transition-colors group ${isLoggingOut ? "opacity-50 cursor-not-allowed" : ""
+              }`}
           >
             <div className="bg-red-100 dark:bg-red-900/20 p-3 rounded-lg">
               <MdOutlineLogout size={24} className="text-red-700 dark:text-red-400" />

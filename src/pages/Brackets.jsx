@@ -31,7 +31,7 @@ function Brackets() {
 
       await createBracket({
         title: title.trim(),
-        current: brackets.length === 0, 
+        current: brackets.length === 0,
       });
 
       setTitle("");
@@ -65,7 +65,7 @@ function Brackets() {
   const handleDeleteBracket = async (id, e) => {
     e.preventDefault(); // Prevent navigation
     e.stopPropagation();
-    
+
     if (window.confirm("Are you sure you want to delete this bracket? All units and content inside will be lost.")) {
       try {
         await deleteBracket(id);
@@ -89,13 +89,13 @@ function Brackets() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="geist-font flex flex-col min-h-screen bg-white dark:bg-stone-950 transition-colors duration-300"
+      className="geist-font flex flex-col min-h-screen bg-white dark:bg-stone-950"
     >
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="p-5 bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 dark:border-stone-800 z-20 transition-colors duration-300"
+        className="p-5 bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 dark:border-stone-800 z-20"
       >
         <div className="flex justify-between items-center max-w-4xl mx-auto">
           <motion.button
@@ -104,7 +104,7 @@ function Brackets() {
             className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             onClick={() => backPage()}
           >
-            <IoMdArrowBack size={22} className="text-stone-700 dark:text-stone-200" />
+            <IoMdArrowBack size={22} className="text-stone-700 dark:text-gray-300" />
           </motion.button>
 
           <h1 className="geist-font wght-700 text-xl text-stone-900 dark:text-white">
@@ -117,7 +117,7 @@ function Brackets() {
             className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             onClick={() => setAddModal((prev) => !prev)}
           >
-            <GrAdd size={22} className="text-stone-700 dark:text-stone-200" />
+            <GrAdd size={22} className="text-stone-700 dark:text-gray-300" />
           </motion.button>
         </div>
       </motion.div>
@@ -174,10 +174,10 @@ function Brackets() {
                       </motion.button>
                     </div>
 
-                    <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-stone-50 group-hover:bg-lime-50 transition-colors ml-2">
+                    <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-stone-50 dark:bg-stone-800 group-hover:bg-lime-50 dark:group-hover:bg-lime-900/30 transition-colors ml-2">
                       <GrFormNext
                         size={20}
-                        className="text-stone-400 group-hover:text-lime-700"
+                        className="text-stone-400 dark:text-stone-500 group-hover:text-lime-700 dark:group-hover:text-lime-400"
                       />
                     </div>
                   </div>
@@ -252,15 +252,15 @@ function Brackets() {
                         autoFocus
                       />
                     </div>
-                    
+
                     {editModal && (
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-stone-50 border border-stone-100 cursor-pointer" onClick={() => setIsCurrent(!isCurrent)}> 
-                         <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isCurrent ? 'bg-lime-600 border-lime-600' : 'bg-white border-stone-300'}`}>
-                            {isCurrent && <motion.div initial={{scale:0}} animate={{scale:1}} className="w-2.5 h-2.5 bg-white rounded-sm" />}
-                         </div>
-                         <label className="text-sm font-medium text-stone-700 cursor-pointer pointer-events-none">
-                            Set as Current Bracket
-                         </label>
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-stone-50 border border-stone-100 cursor-pointer" onClick={() => setIsCurrent(!isCurrent)}>
+                        <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isCurrent ? 'bg-lime-600 border-lime-600' : 'bg-white border-stone-300'}`}>
+                          {isCurrent && <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-2.5 h-2.5 bg-white rounded-sm" />}
+                        </div>
+                        <label className="text-sm font-medium text-stone-700 cursor-pointer pointer-events-none">
+                          Set as Current Bracket
+                        </label>
                       </div>
                     )}
                   </div>

@@ -1,13 +1,24 @@
 @import "tailwindcss";
 @variant dark (&:where(.dark, .dark *));
 
+/* Set base background color for the document to match theme. 
+   This prevents white flashes during page transitions. */
+html {
+  @apply bg-stone-50 transition-colors duration-300;
+}
+
+html.dark {
+  @apply bg-stone-950;
+}
+
 body {
-  @apply bg-white dark:bg-stone-950 transition-colors duration-300;
+  @apply bg-transparent;
 }
 
 /* Base Geist font wrapper that uses a CSS variable for weight. */
 .geist-font {
-  --geist-weight: 400; /* default weight */
+  --geist-weight: 400;
+  /* default weight */
   font-family: "Geist", sans-serif;
   font-optical-sizing: auto;
   font-weight: var(--geist-weight);
@@ -18,27 +29,35 @@ body {
 .wght-100 {
   --geist-weight: 100;
 }
+
 .wght-200 {
   --geist-weight: 200;
 }
+
 .wght-300 {
   --geist-weight: 300;
 }
+
 .wght-400 {
   --geist-weight: 400;
 }
+
 .wght-500 {
   --geist-weight: 500;
 }
+
 .wght-600 {
   --geist-weight: 600;
 }
+
 .wght-700 {
   --geist-weight: 700;
 }
+
 .wght-800 {
   --geist-weight: 800;
 }
+
 .wght-900 {
   --geist-weight: 900;
 }

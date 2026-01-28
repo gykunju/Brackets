@@ -1,4 +1,4 @@
-import {FiSettings, FiArrowRight, FiCalendar, FiClock, FiPlus } from "react-icons/fi";
+import { FiSettings, FiArrowRight, FiCalendar, FiClock, FiPlus } from "react-icons/fi";
 import { MdOutlineAssignmentLate } from "react-icons/md";
 import { LuBookMinus, LuCalendarDays } from "react-icons/lu";
 import { PiExam } from "react-icons/pi";
@@ -34,14 +34,14 @@ function Home() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="min-h-screen geist-font flex flex-col gap-8 bg-gradient-to-b from-white to-stone-50/30 dark:from-stone-900 dark:to-stone-950 pb-25 transition-colors duration-300"
+      className="min-h-screen geist-font flex flex-col gap-8 bg-gradient-to-b from-white to-stone-50/30 dark:from-stone-900 dark:to-stone-950 pb-25"
     >
       {/* Header */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="px-5 py-4 bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 dark:border-stone-800 z-20 transition-colors duration-300"
+        className="px-5 py-4 bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 dark:border-stone-800 z-20"
       >
         <div className="flex justify-between items-center max-w-6xl mx-auto">
           <h1 className="geist-font wght-700 text-xl text-gray-900 dark:text-white">Home</h1>
@@ -87,7 +87,7 @@ function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 + index * 0.1 }}
                   key={course.id}
-                  className="group snap-center w-72 flex-shrink-0 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm hover:shadow-md hover:border-lime-200 dark:hover:border-lime-800 transition-all overflow-hidden"
+                  className="group snap-center w-72 flex-shrink-0 bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 shadow-sm hover:shadow-md hover:border-lime-200 dark:hover:border-lime-700 transition-all overflow-hidden"
                   tabIndex={0}
                   aria-label={course.title}
                 >
@@ -138,7 +138,7 @@ function Home() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5 + index * 0.1 }}
                 key={event.event + event.date}
-                className="group bg-white dark:bg-stone-900 hover:bg-stone-50 dark:hover:bg-stone-800 border border-stone-200 dark:border-stone-800 hover:border-lime-200 dark:hover:border-lime-800 w-full rounded-lg shadow-sm hover:shadow-md p-4 transition-all"
+                className="group bg-white dark:bg-stone-900 hover:bg-stone-50 dark:hover:bg-stone-800/50 border border-stone-200 dark:border-stone-800 hover:border-lime-200 dark:hover:border-lime-700 w-full rounded-lg shadow-sm hover:shadow-md p-4 transition-all"
               >
                 <div className="flex items-center gap-4">
                   <motion.div
@@ -162,7 +162,7 @@ function Home() {
                   <motion.button
                     whileHover={{ scale: 1.1, rotate: -3 }}
                     whileTap={{ scale: 0.95 }}
-                    className="p-2 rounded-full hover:bg-lime-100 dark:hover:bg-lime-900/30 text-lime-700 dark:text-lime-400 opacity-0 group-hover:opacity-100 transition-all"
+                    className="p-2 rounded-full hover:bg-lime-100 dark:hover:bg-lime-900/40 text-lime-700 dark:text-lime-400 opacity-0 group-hover:opacity-100 transition-all"
                   >
                     <FiArrowRight className="w-5 h-5" />
                   </motion.button>
