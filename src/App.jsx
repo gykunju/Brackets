@@ -12,6 +12,7 @@ import Units from "./pages/Units"
 import Content from "./pages/Content"
 import Home from "./pages/Home"
 import Profile from "./pages/Profile"
+import AccountDetails from "./pages/AccountDetails"
 import NotFound from "./pages/NotFound"
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { useUser } from './context/UserContext'
@@ -51,6 +52,7 @@ function App() {
               <Route path="brackets/:bracket/:unit" element={<Content />} />
               <Route path="events" element={<Events />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="profile/account" element={<AccountDetails />} />
               <Route path='*' element={<NotFound/>}/>
             </Route>
           )

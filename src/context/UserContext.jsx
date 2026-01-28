@@ -2,6 +2,7 @@ import { useContext, createContext, useState, useEffect, useMemo, useCallback, u
 import { useNavigate } from "react-router";
 import { createClient } from "@supabase/supabase-js";
 import { parseDocument } from "../services/documentParser";
+import { extractTextFromVisualPDF } from "../services/aiService";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -45,6 +46,29 @@ export function UserProvider({ children }) {
     events: false,
     content: false,
   });
+
+  // Persistent Storage Effects
+  useEffect(() => {
+    localStorage.setItem("user_brackets", JSON.stringify(brackets));
+  }, [brackets]);
+
+  useEffect(() => {
+    localStorage.setItem("user_units", JSON.stringify(units));
+  }, [units]);
+
+  useEffect(() => {
+    localStorage.setItem("user_events", JSON.stringify(events));
+  }, [events]);
+
+  useEffect(() => {
+    localStorage.setItem("user_content", JSON.stringify(content));
+  }, [content]);
+
+  useEffect(() => {
+    if (profile) {
+      localStorage.setItem("user_profile", JSON.stringify(profile));
+    }
+  }, [profile]);
 
   useEffect(() => {
     let authSubscription = null;
@@ -244,6 +268,33 @@ export function UserProvider({ children }) {
 
     return () => clearTimeout(timeoutId);
   }, [profile, brackets, events, units, content]);
+
+  async function updateProfile(updates) {
+    try {
+      setIsLoading((prev) => ({ ...prev, profile: true }));
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.id) throw new Error("No authenticated user");
+
+      const { data, error } = await supabase
+        .from("profile")
+        .update(updates)
+        .eq("supabase_user_id", session.user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setProfile(data);
+      return data;
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      setErrors((prev) => [...prev, error]);
+      throw error;
+    } finally {
+      setIsLoading((prev) => ({ ...prev, profile: false }));
+    }
+  }
 
   async function getProfile() {
     try {
@@ -848,8 +899,21 @@ export function UserProvider({ children }) {
       ) {
         try {
           console.log(`Extracting text from ${fileType} file...`);
-          // extractedText = await parseDocument(file, fileType); // Commented out as parseDocument might prevent upload if logic missing
-          // console.log(`Extracted text length: ${extractedText?.length || 0} characters`);
+          extractedText = await parseDocument(file, fileType);
+          
+          // Fallback to Visual OCR if text is too short (likely scanned or slides)
+          if (!extractedText || extractedText.length < 200) {
+             console.log("Text extraction yielded low content (likely images/slides). Attempting Visual OCR...");
+             const ocrText = await extractTextFromVisualPDF(file);
+             if (ocrText && ocrText.length > extractedText.length) {
+                console.log("Visual OCR successful. replaced text.");
+                extractedText = `[Visual OCR Result]\n${ocrText}`;
+             }
+          }
+
+          console.log("DEBUG: Extracted text type:", typeof extractedText);
+          console.log("DEBUG: Extracted text preview:", extractedText ? extractedText.substring(0, 100) : "N/A");
+          console.log(`Extracted text length: ${extractedText?.length || 0} characters`);
         } catch (error) {
           console.error("Error extracting text:", error);
           // Continue with upload even if text extraction fails
@@ -971,6 +1035,7 @@ export function UserProvider({ children }) {
     profile,
     setProfile,
     getProfile,
+    updateProfile,
   }), [
     user, isLoggedIn, errors, authLoading,
     brackets, units, events, content, isLoading, profile
