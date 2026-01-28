@@ -10,6 +10,7 @@ import { useState, useEffect } from "react";
 import { LiaQuestionCircle } from "react-icons/lia";
 import { motion } from "framer-motion";
 import { useUser } from "../context/UserContext";
+import { useTheme } from "../context/ThemeContext";
 
 function Profile() {
   const { signOut, profile, getProfile, user } = useUser();
@@ -51,7 +52,7 @@ function Profile() {
     }
   }, []);
 
-  const [mode, setMode] = useState("light");
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <motion.div
@@ -59,13 +60,13 @@ function Profile() {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.3 }}
-      className="min-h-screen flex flex-col pb-25 bg-gradient-to-b from-white to-stone-50/30"
+      className="min-h-screen flex flex-col pb-25 bg-gradient-to-b from-white to-stone-50/30 dark:from-stone-900 dark:to-stone-950"
     >
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="px-5 py-4 bg-white/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 z-20"
+        className="px-5 py-4 bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 dark:border-stone-800 z-20"
       >
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <motion.button
@@ -76,7 +77,7 @@ function Profile() {
           >
             <IoMdArrowBack size={24} className="text-gray-700" />
           </motion.button>
-          <h2 className="geist-font wght-700 text-xl text-gray-900">Profile</h2>
+          <h2 className="geist-font wght-700 text-xl text-gray-900 dark:text-white">Profile</h2>
           <div className="w-10" /> {/* Spacer for centering */}
         </div>
       </motion.div>
@@ -123,10 +124,10 @@ function Profile() {
                   </span>
                 </motion.div>
               </motion.div>
-              <h2 className="geist-font wght-700 text-2xl text-gray-900">
+              <h2 className="geist-font wght-700 text-2xl text-gray-900 dark:text-white">
                 {profile.full_name}
               </h2>
-              <p className="geist-font wght-500 text-gray-500 mt-1">
+              <p className="geist-font wght-500 text-gray-500 dark:text-gray-400 mt-1">
                 {profile.email}
               </p>
               {profile.courses > 0 || profile.brackets > 0 ? (
@@ -160,7 +161,7 @@ function Profile() {
               SETTINGS
             </h2>
           </div>
-          <div className="bg-white border border-stone-200 rounded-xl shadow-sm flex flex-col divide-y divide-stone-100">
+          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl shadow-sm flex flex-col divide-y divide-stone-100 dark:divide-stone-800">
             <motion.div
               whileHover={{ backgroundColor: "#F5F5F4" }}
               className="flex gap-4 items-center p-4 transition-colors"
@@ -170,7 +171,7 @@ function Profile() {
               </div>
               <div className="flex justify-between w-full items-center">
                 <div>
-                  <h3 className="geist-font wght-600 text-base text-gray-900">
+                  <h3 className="geist-font wght-600 text-base text-gray-900 dark:text-white">
                     Notifications
                   </h3>
                   <p className="geist-font wght-500 text-sm text-gray-500">
@@ -189,7 +190,7 @@ function Profile() {
               className="flex gap-4 items-center p-4 transition-colors"
             >
               <div className="bg-lime-100 p-3 rounded-lg">
-                {mode === "light" ? (
+                {theme === "light" ? (
                   <CiLight size={24} className="text-lime-800" />
                 ) : (
                   <CiDark size={24} className="text-lime-800" />
@@ -197,7 +198,7 @@ function Profile() {
               </div>
               <div className="flex justify-between w-full items-center">
                 <div>
-                  <h3 className="geist-font wght-600 text-base text-gray-900">
+                  <h3 className="geist-font wght-600 text-base text-gray-900 dark:text-white">
                     App Theme
                   </h3>
                   <p className="geist-font wght-500 text-sm text-gray-500">
@@ -207,9 +208,8 @@ function Profile() {
                 <label className="switch">
                   <input
                     type="checkbox"
-                    onChange={() =>
-                      setMode(mode === "light" ? "dark" : "light")
-                    }
+                    onChange={toggleTheme}
+                    checked={theme === "dark"}
                   />
                   <span className="slider round"></span>
                 </label>
@@ -225,7 +225,7 @@ function Profile() {
               </div>
               <div className="flex justify-between w-full items-center">
                 <div>
-                  <h3 className="geist-font wght-600 text-base text-gray-900">
+                  <h3 className="geist-font wght-600 text-base text-gray-900 dark:text-white">
                     Account
                   </h3>
                   <p className="geist-font wght-500 text-sm text-gray-500">
@@ -247,7 +247,7 @@ function Profile() {
               </div>
               <div className="flex justify-between w-full items-center">
                 <div>
-                  <h3 className="geist-font wght-600 text-base text-gray-900">
+                  <h3 className="geist-font wght-600 text-base text-gray-900 dark:text-white">
                     Help ＆ Support
                   </h3>
                   <p className="geist-font wght-500 text-sm text-gray-500">
@@ -273,9 +273,8 @@ function Profile() {
             disabled={isLoggingOut}
             whileHover={{ scale: isLoggingOut ? 1 : 1.01 }}
             whileTap={{ scale: isLoggingOut ? 1 : 0.99 }}
-            className={`w-full bg-white hover:bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-4 transition-colors group ${
-              isLoggingOut ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className={`w-full bg-white dark:bg-stone-900 hover:bg-red-50 dark:hover:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-xl p-4 flex items-center gap-4 transition-colors group ${isLoggingOut ? "opacity-50 cursor-not-allowed" : ""
+              }`}
           >
             <div className="bg-red-100 p-3 rounded-lg">
               <MdOutlineLogout size={24} className="text-red-700" />

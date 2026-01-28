@@ -31,7 +31,7 @@ function Brackets() {
 
       await createBracket({
         title: title.trim(),
-        current: brackets.length === 0, 
+        current: brackets.length === 0,
       });
 
       setTitle("");
@@ -65,7 +65,7 @@ function Brackets() {
   const handleDeleteBracket = async (id, e) => {
     e.preventDefault(); // Prevent navigation
     e.stopPropagation();
-    
+
     if (window.confirm("Are you sure you want to delete this bracket? All units and content inside will be lost.")) {
       try {
         await deleteBracket(id);
@@ -89,35 +89,35 @@ function Brackets() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="geist-font flex flex-col min-h-screen bg-white"
+      className="geist-font flex flex-col min-h-screen bg-white dark:bg-stone-950"
     >
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="p-5 bg-white/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 z-20"
+        className="p-5 bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 dark:border-stone-800 z-20"
       >
         <div className="flex justify-between items-center max-w-4xl mx-auto">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="p-2 rounded-lg hover:bg-stone-100 transition-colors"
+            className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             onClick={() => backPage()}
           >
-            <IoMdArrowBack size={22} className="text-stone-700" />
+            <IoMdArrowBack size={22} className="text-stone-700 dark:text-gray-300" />
           </motion.button>
 
-          <h1 className="geist-font wght-700 text-xl text-stone-900">
+          <h1 className="geist-font wght-700 text-xl text-stone-900 dark:text-white">
             Brackets
           </h1>
 
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="p-2 rounded-lg hover:bg-stone-100 transition-colors"
+            className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             onClick={() => setAddModal((prev) => !prev)}
           >
-            <GrAdd size={22} className="text-stone-700" />
+            <GrAdd size={22} className="text-stone-700 dark:text-gray-300" />
           </motion.button>
         </div>
       </motion.div>
@@ -133,29 +133,29 @@ function Brackets() {
             >
               <Link
                 to={`/brackets/${bracket.title}`}
-                className="group flex gap-4 items-center p-5 rounded-xl bg-white border border-lime-100 shadow-sm hover:shadow-md hover:border-lime-500 transition-all relative overflow-hidden"
+                className="group flex gap-4 items-center p-5 rounded-xl bg-white dark:bg-stone-900 border border-lime-100 dark:border-stone-800 shadow-sm hover:shadow-md hover:border-lime-500 dark:hover:border-lime-500 transition-all relative overflow-hidden"
               >
-                <div className="p-3 rounded-xl bg-gradient-to-br from-lime-50 to-stone-100  border border-lime-200 group-hover:bg-lime-50 group-hover:border-lime-500 transition-colors">
-                  <LuBookMinus size={24} className="text-lime-800 group-hover:text-lime-800" />
+                <div className="p-3 rounded-xl bg-gradient-to-br from-lime-50 to-stone-100 dark:from-stone-800 dark:to-stone-900 border border-lime-200 dark:border-lime-900 group-hover:bg-lime-50 dark:group-hover:bg-lime-900/30 group-hover:border-lime-500 transition-colors">
+                  <LuBookMinus size={24} className="text-lime-800 dark:text-lime-400 group-hover:text-lime-800 dark:group-hover:text-lime-400" />
                 </div>
 
                 <div className="flex-1 flex justify-between items-center gap-4">
                   <div className="flex flex-col gap-1">
-                    <h3 className="geist-font wght-600 text-lg text-stone-900 group-hover:text-lime-900 transition-colors">
+                    <h3 className="geist-font wght-600 text-lg text-stone-900 dark:text-white group-hover:text-lime-900 dark:group-hover:text-lime-400 transition-colors">
                       {bracket.title}
                     </h3>
-                    <p className="text-sm text-stone-500">
+                    <p className="text-sm text-stone-500 dark:text-stone-400">
                       {new Date(bracket.created_at).toLocaleDateString()}
                     </p>
                   </div>
 
                   <div className="flex items-center gap-3">
                     {bracket.current && (
-                      <span className="px-2 py-0.5 rounded-full text-xs bg-lime-100 text-lime-800 font-medium">
+                      <span className="px-2 py-0.5 rounded-full text-xs bg-lime-100 text-lime-800 dark:bg-lime-900/40 dark:text-lime-400 font-medium">
                         Current
                       </span>
                     )}
-                    
+
                     {/* Action Buttons */}
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <motion.button
@@ -178,10 +178,10 @@ function Brackets() {
                       </motion.button>
                     </div>
 
-                    <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-stone-50 group-hover:bg-lime-50 transition-colors ml-2">
+                    <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-stone-50 dark:bg-stone-800 group-hover:bg-lime-50 dark:group-hover:bg-lime-900/30 transition-colors ml-2">
                       <GrFormNext
                         size={20}
-                        className="text-stone-400 group-hover:text-lime-700"
+                        className="text-stone-400 dark:text-stone-500 group-hover:text-lime-700 dark:group-hover:text-lime-400"
                       />
                     </div>
                   </div>
@@ -190,7 +190,7 @@ function Brackets() {
             </motion.div>
           ))}
           {brackets.length === 0 && (
-            <div className="text-center py-20 text-stone-500">
+            <div className="text-center py-20 text-stone-500 dark:text-stone-400">
               <p>No brackets found. Create one to get started.</p>
             </div>
           )}
@@ -256,15 +256,15 @@ function Brackets() {
                         autoFocus
                       />
                     </div>
-                    
+
                     {editModal && (
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-stone-50 border border-stone-100 cursor-pointer" onClick={() => setIsCurrent(!isCurrent)}> 
-                         <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isCurrent ? 'bg-lime-600 border-lime-600' : 'bg-white border-stone-300'}`}>
-                            {isCurrent && <motion.div initial={{scale:0}} animate={{scale:1}} className="w-2.5 h-2.5 bg-white rounded-sm" />}
-                         </div>
-                         <label className="text-sm font-medium text-stone-700 cursor-pointer pointer-events-none">
-                            Set as Current Bracket
-                         </label>
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-stone-50 border border-stone-100 cursor-pointer" onClick={() => setIsCurrent(!isCurrent)}>
+                        <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isCurrent ? 'bg-lime-600 border-lime-600' : 'bg-white border-stone-300'}`}>
+                          {isCurrent && <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-2.5 h-2.5 bg-white rounded-sm" />}
+                        </div>
+                        <label className="text-sm font-medium text-stone-700 cursor-pointer pointer-events-none">
+                          Set as Current Bracket
+                        </label>
                       </div>
                     )}
                   </div>

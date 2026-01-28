@@ -112,18 +112,18 @@ function Ai_Assistant() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="flex flex-col geist-font min-h-screen relative bg-gradient-to-b from-white to-stone-50/30 pb-20"
+      className="flex flex-col geist-font min-h-screen relative bg-gradient-to-b from-white to-stone-50/30 dark:from-stone-900 dark:to-stone-950 pb-20"
     >
       {/* Header */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="flex flex-col items-center pt-6 pb-4 bg-white/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 z-20"
+        className="flex flex-col items-center pt-6 pb-4 bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 dark:border-stone-800 z-20"
       >
         <div className="flex items-center gap-2">
-          <BsStars size={24} className="text-lime-800" />
-          <h1 className="geist-font wght-700 text-xl text-gray-900">
+          <BsStars size={24} className="text-lime-800 dark:text-lime-400" />
+          <h1 className="geist-font wght-700 text-xl text-gray-900 dark:text-white">
             AI Assistant
           </h1>
         </div>
@@ -143,22 +143,20 @@ function Ai_Assistant() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
             key={index}
-            className={`flex items-end gap-3 max-w-[94%] lg:max-w-[70%] ${
-              chat.speaker === "user"
+            className={`flex items-end gap-3 max-w-[94%] lg:max-w-[70%] ${chat.speaker === "user"
                 ? "self-end flex-row-reverse"
                 : "self-start flex-row"
-            }`}
+              }`}
           >
             {/* Avatar */}
             <motion.div
               whileHover={{ scale: 1.1 }}
-              className={`flex-shrink-0 ${
-                chat.speaker === "user" ? "ml-2" : "mr-2"
-              }`}
+              className={`flex-shrink-0 ${chat.speaker === "user" ? "ml-2" : "mr-2"
+                }`}
             >
               {chat.speaker === "ai" ? (
-                <div className="p-2 rounded-full bg-gradient-to-br from-lime-50 to-stone-100 border border-lime-200 shadow-sm">
-                  <BsStars size={20} className="text-lime-800" />
+                <div className="p-2 rounded-full bg-gradient-to-br from-lime-50 to-stone-100 dark:from-stone-800 dark:to-stone-900 border border-lime-200 dark:border-lime-900 shadow-sm">
+                  <BsStars size={20} className="text-lime-800 dark:text-lime-400" />
                 </div>
               ) : (
                 <div className="p-2 rounded-full bg-gradient-to-br from-lime-800 to-lime-900 shadow-sm">
@@ -169,22 +167,22 @@ function Ai_Assistant() {
 
             {/* Message */}
             <div
-              className={`flex flex-col ${
-                chat.speaker === "user" ? "items-end" : "items-start"
-              }`}
+              className={`flex flex-col ${chat.speaker === "user" ? "items-end" : "items-start"
+                }`}
             >
-              <span className="text-sm text-gray-600 mb-1 px-1">
+              <span className="text-sm text-gray-600 dark:text-gray-400 mb-1 px-1">
                 {chat.speaker === "ai" ? "AI Assistant" : "You"}
               </span>
               <motion.div
                 whileHover={{ scale: 1.01 }}
-                className={`rounded-2xl p-4 text-base ${
-                  chat.speaker === "user"
+                className={`rounded-2xl p-4 text-base ${chat.speaker === "user"
                     ? "bg-lime-800 text-white shadow-sm"
                     : chat.error
-                    ? "bg-red-50 border border-red-200 text-red-800 shadow-sm"
-                    : "bg-white border border-stone-200 shadow-sm"
-                }`}
+                      ? "bg-red-50 border border-red-200 text-red-800 shadow-sm"
+                      : chat.error
+                        ? "bg-red-50 border border-red-200 text-red-800 shadow-sm"
+                        : "bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-sm dark:text-gray-100"
+                  }`}
               >
                 {chat.content}
                 {chat.file && (
@@ -205,14 +203,14 @@ function Ai_Assistant() {
             animate={{ opacity: 1, y: 0 }}
             className="flex items-end gap-3 max-w-[94%] lg:max-w-[70%] self-start"
           >
-            <div className="p-2 rounded-full bg-gradient-to-br from-lime-50 to-stone-100 border border-lime-200 shadow-sm">
-              <BsStars size={20} className="text-lime-800" />
+            <div className="p-2 rounded-full bg-gradient-to-br from-lime-50 to-stone-100 dark:from-stone-800 dark:to-stone-900 border border-lime-200 dark:border-lime-900 shadow-sm">
+              <BsStars size={20} className="text-lime-800 dark:text-lime-400" />
             </div>
-            <div className="rounded-2xl p-4 bg-white border border-stone-200 shadow-sm">
+            <div className="rounded-2xl p-4 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-sm">
               <div className="flex gap-1">
-                <div className="w-2 h-2 rounded-full bg-lime-800 animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 rounded-full bg-lime-800 animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 rounded-full bg-lime-800 animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="w-2 h-2 rounded-full bg-lime-800 dark:bg-lime-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 rounded-full bg-lime-800 dark:bg-lime-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 rounded-full bg-lime-800 dark:bg-lime-400 animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
           </motion.div>
@@ -225,7 +223,7 @@ function Ai_Assistant() {
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="sticky bottom-[84px] w-full px-4 py-3 bg-gradient-to-b from-white/80 to-white backdrop-blur-sm border-t border-stone-100 z-20"
+        className="sticky bottom-[84px] w-full px-4 py-3 bg-gradient-to-b from-white/80 to-white dark:from-stone-900/80 dark:to-stone-900 backdrop-blur-sm border-t border-stone-100 dark:border-stone-800 z-20"
       >
         <div className="max-w-4xl mx-auto">
           {/* Attached file preview */}
@@ -252,14 +250,14 @@ function Ai_Assistant() {
           </AnimatePresence>
 
           <form onSubmit={handleSendMessage} className="flex items-center gap-3">
-            <div className="flex-1 flex items-center gap-2 bg-white rounded-2xl border border-stone-200 hover:border-lime-600 focus-within:border-lime-600 focus-within:ring-1 focus-within:ring-lime-600 transition-all shadow-sm">
+            <div className="flex-1 flex items-center gap-2 bg-white dark:bg-stone-800 rounded-2xl border border-stone-200 dark:border-stone-700 hover:border-lime-600 focus-within:border-lime-600 focus-within:ring-1 focus-within:ring-lime-600 transition-all shadow-sm">
               <input
                 type="text"
                 placeholder="Type your message..."
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 disabled={isLoading}
-                className="flex-1 p-3.5 text-base text-gray-900 bg-transparent focus:outline-none disabled:text-gray-400"
+                className="flex-1 p-3.5 text-base text-gray-900 dark:text-white bg-transparent focus:outline-none disabled:text-gray-400"
               />
               <input
                 type="file"
