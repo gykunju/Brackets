@@ -9,10 +9,6 @@ export function ThemeProvider({ children }) {
         if (savedTheme) {
             return savedTheme;
         }
-        // Fallback to system preference
-        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-            return "dark";
-        }
         return "light";
     });
 
