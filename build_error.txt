@@ -1,0 +1,30 @@
+
+> brackets@0.0.0 build
+> vite build
+
+[36mvite v7.3.1 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32m✓[39m 125 modules transformed.
+[31m✗[39m Build failed in 3.62s
+[31merror during build:
+[31m[vite-plugin-pwa:build] There was an error during the build:
+  ../../../../../../../C:/Users/user/Desktop/code/Projects/Brackets/src/hooks/useNotifications.js (38:10): Expression expected
+Additionally, handling the error in the 'buildEnd' hook caused the following error:
+  ../../../../../../../C:/Users/user/Desktop/code/Projects/Brackets/src/hooks/useNotifications.js (38:10): Expression expected[31m
+file: [36mC:/Users/user/Desktop/code/Projects/Brackets/src/hooks/useNotifications.js:38:10[31m
+[33m
+36:       if (!notifiedEvents.current.has(event.id)) {
+37:         toast((t) => (
+38:           <div className="flex items-center gap-3 geist-font">
+              ^
+39:             <div className="p-2 bg-lime-100 text-lime-800 rounded-lg">
+40:               <CiCalendar size={24} />
+[31m
+    at getRollupError (file:///c:/Users/user/Desktop/code/Projects/Brackets/node_modules/rollup/dist/es/shared/parseAst.js:401:41)
+    at file:///c:/Users/user/Desktop/code/Projects/Brackets/node_modules/rollup/dist/es/shared/node-entry.js:23341:39
+    at async catchUnfinishedHookActions (file:///c:/Users/user/Desktop/code/Projects/Brackets/node_modules/rollup/dist/es/shared/node-entry.js:22799:16)
+    at async rollupInternal (file:///c:/Users/user/Desktop/code/Projects/Brackets/node_modules/rollup/dist/es/shared/node-entry.js:23324:5)
+    at async buildEnvironment (file:///c:/Users/user/Desktop/code/Projects/Brackets/node_modules/vite/dist/node/chunks/config.js:33541:12)
+    at async Object.build (file:///c:/Users/user/Desktop/code/Projects/Brackets/node_modules/vite/dist/node/chunks/config.js:33900:19)
+    at async Object.buildApp (file:///c:/Users/user/Desktop/code/Projects/Brackets/node_modules/vite/dist/node/chunks/config.js:33897:153)
+    at async CAC.<anonymous> (file:///c:/Users/user/Desktop/code/Projects/Brackets/node_modules/vite/dist/node/cli.js:629:3)[39m

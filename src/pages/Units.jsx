@@ -6,6 +6,8 @@ import { AiOutlineClose } from "react-icons/ai";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useUser } from "../context/UserContext";
+import confetti from "canvas-confetti";
+import { IoCheckmarkCircle, IoRadioButtonOff } from "react-icons/io5";
 
 function Units() {
   const navigate = useNavigate();
@@ -99,6 +101,28 @@ function Units() {
     });
   };
 
+  const toggleUnitCompletion = async (unit, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const newStatus = !unit.completed;
+      await updateUnit(unit.id, { completed: newStatus });
+      if (newStatus) {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      }
+    } catch (error) {
+      setError("Failed to update unit status");
+    }
+  };
+
+  const totalUnits = filteredUnits.length;
+  const completedUnits = filteredUnits.filter(u => u.completed).length;
+  const progressPercentage = totalUnits === 0 ? 0 : Math.round((completedUnits / totalUnits) * 100);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -137,6 +161,33 @@ function Units() {
           </motion.button>
         </div>
       </motion.div>
+
+      {/* Progress Bar */}
+      {totalUnits > 0 && (
+        <motion.div
+           initial={{ opacity: 0, y: 10 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ delay: 0.2 }}
+           className="max-w-4xl mx-auto w-full px-5 pt-6 pb-2"
+        >
+          <div className="flex justify-between items-end mb-2">
+            <h3 className="geist-font wght-600 text-sm text-gray-700 dark:text-gray-300">
+              Bracket Progress
+            </h3>
+            <span className="text-sm font-bold text-lime-800 dark:text-lime-400">
+              {completedUnits} / {totalUnits} ({progressPercentage}%)
+            </span>
+          </div>
+          <div className="w-full h-3 bg-stone-200 dark:bg-stone-800 rounded-full overflow-hidden">
+            <motion.div 
+               initial={{ width: 0 }}
+               animate={{ width: `${progressPercentage}%` }}
+               transition={{ duration: 0.5, ease: "easeOut" }}
+               className="h-full bg-lime-600 dark:bg-lime-500 rounded-full"
+            />
+          </div>
+        </motion.div>
+      )}
 
       {/* Units Grid */}
       <div
@@ -191,14 +242,26 @@ function Units() {
 
                   <div className="flex-1 flex items-center justify-between min-w-0">
                     <div className="flex flex-col gap-0.5 min-w-0">
-                      <h3 className="geist-font wght-600 text-base text-gray-900 dark:text-white truncate pr-4">
+                      <h3 className={`geist-font wght-600 text-base truncate pr-4 transition-all ${unit.completed ? 'text-gray-500 dark:text-gray-400 line-through' : 'text-gray-900 dark:text-white'}`}>
                         {unit.title}
                       </h3>
+                      {unit.completed && (
+                        <span className="text-xs text-lime-700 dark:text-lime-500 font-medium">Completed</span>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-2">
                       {/* Action Buttons */}
                       <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={(e) => toggleUnitCompletion(unit, e)}
+                          className={`p-2 rounded-lg transition-colors ${unit.completed ? 'text-lime-600 bg-lime-50 dark:bg-lime-900/30 dark:text-lime-400' : 'text-stone-400 hover:text-lime-600 hover:bg-stone-100 dark:hover:bg-stone-800'}`}
+                          title={unit.completed ? "Mark Incomplete" : "Mark Complete"}
+                        >
+                          {unit.completed ? <IoCheckmarkCircle size={20} /> : <IoRadioButtonOff size={20} />}
+                        </motion.button>
                         <motion.button
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}

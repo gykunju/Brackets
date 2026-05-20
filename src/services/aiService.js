@@ -25,7 +25,13 @@ export async function sendMessage(message, chatHistory = [], userContext = {}) {
     if (!API_KEY) throw new Error("Groq API Key is missing");
 
     // Build context from user's data
-    let systemPrompt = "You are a helpful AI study assistant for a student. ";
+    let systemPrompt = `You are a Socratic Study Coach, an advanced AI tutor built into the 'Brackets' study platform. 
+Your goal is to actively help students understand their material, track their progress, and prepare for exams.
+Follow these guidelines:
+1. Use clear Markdown headings and bullet points to structure your answers.
+2. If asked a direct question about their material, answer it clearly but also prompt them with a follow-up question to test their understanding.
+3. If they ask for a quiz or summary, generate a well-structured response based ONLY on the context provided.
+4. Always be encouraging and motivating.`;
     
     // Debug logging
     console.log("AI Context - Content count:", userContext.content?.length);
@@ -79,7 +85,7 @@ export async function sendMessage(message, chatHistory = [], userContext = {}) {
       });
     }
 
-    systemPrompt += "\n\nUse this context to provide personalized, relevant assistance. You can reference specific brackets, units, or content when appropriate.";
+    systemPrompt += "\n\nUse this context to provide highly personalized, proactive coaching. Reference specific brackets, units, or uploaded content to make your advice actionable and immediately relevant.";
 
     // Convert chat history to Groq format
     // Groq expects: { role: "user" | "assistant" | "system", content: "..." }

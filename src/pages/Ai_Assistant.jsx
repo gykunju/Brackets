@@ -189,9 +189,7 @@ function Ai_Assistant() {
                     ? "bg-lime-800 text-white shadow-sm"
                     : chat.error
                       ? "bg-red-50 border border-red-200 text-red-800 shadow-sm"
-                      : chat.error
-                        ? "bg-red-50 border border-red-200 text-red-800 shadow-sm"
-                        : "bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-sm dark:text-gray-100"
+                      : "bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 shadow-sm dark:text-gray-100"
                   }`}
               >
                 <div className={`prose dark:prose-invert max-w-none ${chat.speaker === "user" ? "prose-p:text-white prose-headings:text-white prose-li:text-white prose-strong:text-white" : ""}`}>
@@ -270,6 +268,18 @@ function Ai_Assistant() {
         className="sticky bottom-[84px] w-full px-4 py-3 bg-gradient-to-b from-white/80 to-white dark:from-stone-900/80 dark:to-stone-900 backdrop-blur-sm border-t border-stone-100 dark:border-stone-800 z-20"
       >
         <div className="max-w-4xl mx-auto">
+          {/* Action Chips */}
+          {chats.length <= 1 && !isLoading && (
+            <motion.div 
+               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+               className="flex flex-wrap gap-2 mb-3"
+            >
+              <button onClick={() => setInputMessage("Help me plan a study schedule based on my upcoming events.")} className="px-3 py-1.5 text-sm bg-lime-50 text-lime-800 hover:bg-lime-100 dark:bg-lime-900/30 dark:text-lime-400 dark:hover:bg-lime-900/50 rounded-full border border-lime-200 dark:border-lime-800 transition-colors shadow-sm">🗓️ Plan Study Schedule</button>
+              <button onClick={() => setInputMessage("Generate a 5-question pop quiz based on my current bracket's units.")} className="px-3 py-1.5 text-sm bg-blue-50 text-blue-800 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 rounded-full border border-blue-200 dark:border-blue-800 transition-colors shadow-sm">📝 Generate Quiz</button>
+              <button onClick={() => setInputMessage("Please summarize the key concepts across all my uploaded study materials.")} className="px-3 py-1.5 text-sm bg-purple-50 text-purple-800 hover:bg-purple-100 dark:bg-purple-900/30 dark:text-purple-400 dark:hover:bg-purple-900/50 rounded-full border border-purple-200 dark:border-purple-800 transition-colors shadow-sm">📊 Summarize Material</button>
+            </motion.div>
+          )}
+
           {/* Attached file preview */}
           <AnimatePresence>
             {attachedFile && (

@@ -156,7 +156,7 @@ function Home() {
                       {event.title}
                     </h3>
                     <p className="text-sm text-lime-700 dark:text-lime-500 mt-1">
-                      {event.date.toLocaleDateString()}
+                      {event.date ? new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ""}
                     </p>
                   </div>
                   <motion.button
