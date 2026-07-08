@@ -1,17 +1,19 @@
 import { GrAdd } from "react-icons/gr";
 import { CiCalendar, CiClock2, CiMapPin } from "react-icons/ci";
 import { AiOutlineClose } from "react-icons/ai";
-import { FiTrash2 } from "react-icons/fi";
+import { FiTrash2, FiCalendar } from "react-icons/fi";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from '../context/UserContext';
+import { toast } from "react-hot-toast";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
 
 function Events() {
   const { events, createEvent, deleteEvent, getEvents, isLoading } = useUser();
   const [addModal, setAddModal] = useState(false);
-  const [typeFilter, setTypeFilter] = useState("All Events");
-  const [dateFilter, setDateFilter] = useState("upcoming");
   const [submitting, setSubmitting] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   // Form fields
   const [title, setTitle] = useState("");
@@ -27,41 +29,66 @@ function Events() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Filter events by type
-  const filteredByType = typeFilter === "All Events"
-    ? events
-    : events.filter(e => e.type === typeFilter);
+  const handleDateChange = (newDate) => {
+    setSelectedDate(newDate);
+  };
 
-  // Filter by date (upcoming or past)
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const filteredEvents = filteredByType.filter(event => {
-    if (!event.date) return dateFilter === "upcoming";
+  const selectedDateEvents = events.filter(event => {
+    if (!event.date) return false;
     const eventDate = new Date(event.date);
-    eventDate.setHours(0, 0, 0, 0);
-
-    if (dateFilter === "upcoming") {
-      return eventDate >= today;
-    } else {
-      return eventDate < today;
-    }
+    // Important: Account for timezone by doing localized string comparison or simply:
+    return eventDate.getUTCFullYear() === selectedDate.getFullYear() &&
+           eventDate.getUTCMonth() === selectedDate.getMonth() &&
+           eventDate.getUTCDate() === selectedDate.getDate();
+  }).sort((a, b) => {
+     if (a.time && b.time) return a.time.localeCompare(b.time);
+     return 0;
   });
 
-  // Count upcoming and past events
-  const upcomingCount = events.filter(e => {
-    if (!e.date) return true;
-    const eventDate = new Date(e.date);
-    eventDate.setHours(0, 0, 0, 0);
-    return eventDate >= today;
-  }).length;
+  const getDayEvents = (dateObj) => {
+    return events.filter(e => {
+        if (!e.date) return false;
+        const eventDate = new Date(e.date);
+        return eventDate.getUTCFullYear() === dateObj.getFullYear() &&
+               eventDate.getUTCMonth() === dateObj.getMonth() &&
+               eventDate.getUTCDate() === dateObj.getDate();
+    });
+  };
 
-  const pastCount = events.filter(e => {
-    if (!e.date) return false;
-    const eventDate = new Date(e.date);
-    eventDate.setHours(0, 0, 0, 0);
-    return eventDate < today;
-  }).length;
+  const tileContent = ({ date, view }) => {
+    if (view === 'month') {
+      const dayEvents = getDayEvents(date);
+      if (dayEvents.length > 0) {
+        return (
+          <div className="flex flex-wrap gap-0.5 justify-center mt-1 px-1">
+            {dayEvents.slice(0, 3).map((e, i) => (
+              <div 
+                key={i} 
+                className={`w-1.5 h-1.5 rounded-full ${
+                  e.type === 'Exam' ? 'bg-red-500' : 
+                  e.type === 'Assignment' ? 'bg-purple-500' : 
+                  'bg-lime-500'
+                }`} 
+              />
+            ))}
+            {dayEvents.length > 3 && <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />}
+          </div>
+        );
+      }
+    }
+    return null;
+  };
+
+  const tileClassName = ({ date, view }) => {
+    if (view === 'month') {
+      // Check if it's today
+      const today = new Date();
+      if (date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear()) {
+        return 'text-lime-700 font-bold bg-lime-50/50 rounded-lg';
+      }
+    }
+    return 'rounded-lg hover:bg-stone-100 transition-colors py-2 text-sm font-medium';
+  };
 
   // Handle form submission
   const handleSubmit = async (e) => {
@@ -86,9 +113,12 @@ function Events() {
       setTime("");
       setLocation("");
       setAddModal(false);
+      toast.success("Event created successfully!");
     } catch (error) {
       console.error("Error creating event:", error);
-      alert("Failed to create event. Please try again.");
+      const errMsg = error.message || error.details || "Unknown error";
+      toast.error(`Failed to create event: ${errMsg}`);
+      alert(`Error creating event: ${errMsg}\nCheck your RLS policies or database schema.`);
     } finally {
       setSubmitting(false);
     }
@@ -100,21 +130,20 @@ function Events() {
 
     try {
       await deleteEvent(eventId);
+      toast.success("Event deleted successfully!");
     } catch (error) {
       console.error("Error deleting event:", error);
-      alert("Failed to delete event. Please try again.");
+      toast.error("Failed to delete event. Please try again.");
     }
   };
 
-  // Format date for display
-  const formatDate = (dateString) => {
-    if (!dateString) return "No date set";
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
+  const openAddModal = () => {
+    // Pre-fill the date with the selected calendar date
+    const yyyy = selectedDate.getFullYear();
+    const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(selectedDate.getDate()).padStart(2, '0');
+    setDate(`${yyyy}-${mm}-${dd}`);
+    setAddModal(true);
   };
 
   return (
@@ -122,7 +151,7 @@ function Events() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="geist-font flex flex-col min-h-screen bg-gradient-to-b from-white to-stone-50/30 dark:from-stone-900 dark:to-stone-950 pb-25 gap-2"
+      className="geist-font flex flex-col min-h-screen bg-stone-50 dark:bg-stone-950 pb-25 gap-2"
     >
       {/* Header */}
       <motion.div
@@ -132,11 +161,13 @@ function Events() {
         className="px-5 py-4 bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 dark:border-stone-800 z-20"
       >
         <div className="flex justify-between items-center max-w-6xl mx-auto">
-          <h1 className="geist-font wght-700 text-xl text-gray-900 dark:text-white">Events</h1>
+          <h1 className="geist-font wght-700 text-xl text-gray-900 dark:text-white flex items-center gap-2">
+             <FiCalendar /> Calendar
+          </h1>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setAddModal(true)}
+            onClick={openAddModal}
             className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
           >
             <GrAdd size={22} className="text-gray-700 dark:text-gray-300" />
@@ -144,199 +175,167 @@ function Events() {
         </div>
       </motion.div>
 
-      {/* Type Filter */}
-      <div className="px-5 pt-4 overflow-hidden lg:mx-auto">
-        <motion.div
-          initial={{ x: -20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="flex mx-auto gap-3 overflow-x-auto items-center pb-2 hide-scrollbar"
-        >
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            className={`px-4 py-2.5 rounded-xl whitespace-nowrap geist-font wght-600 transition-all ${typeFilter === "All Events"
-              ? "bg-lime-800 text-white shadow-sm"
-              : "bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-gray-700 dark:text-gray-300 hover:border-lime-600"
-              }`}
-            onClick={() => setTypeFilter("All Events")}
-          >
-            All Events
-          </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            className={`px-4 py-2.5 rounded-xl whitespace-nowrap geist-font wght-600 transition-all ${typeFilter === "Exam"
-              ? "bg-red-600 text-white shadow-sm"
-              : "bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-gray-700 dark:text-gray-300 hover:border-red-400"
-              }`}
-            onClick={() => setTypeFilter("Exam")}
-          >
-            Exams
-          </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            className={`px-4 py-2.5 rounded-xl whitespace-nowrap geist-font wght-600 transition-all ${typeFilter === "Assignment"
-              ? "bg-purple-600 text-white shadow-sm"
-              : "bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-gray-700 dark:text-gray-300 hover:border-purple-400"
-              }`}
-            onClick={() => setTypeFilter("Assignment")}
-          >
-            Assignments
-          </motion.button>
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            className={`px-4 py-2.5 rounded-xl whitespace-nowrap geist-font wght-600 transition-all ${typeFilter === "Event"
-              ? "bg-blue-600 text-white shadow-sm"
-              : "bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-gray-700 dark:text-gray-300 hover:border-blue-400"
-              }`}
-            onClick={() => setTypeFilter("Event")}
-          >
-            Events
-          </motion.button>
-        </motion.div>
-      </div>
-
-      {/* Date filter */}
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="flex gap-3 px-5 mb-2 mx-auto"
-      >
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          className={`py-2 px-4 rounded-lg geist-font wght-600 transition-all ${dateFilter === "upcoming"
-            ? "bg-lime-100 text-lime-800"
-            : "text-gray-600 hover:bg-stone-100"
-            }`}
-          onClick={() => setDateFilter("upcoming")}
-        >
-          Upcoming ({upcomingCount})
-        </motion.button>
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          className={`py-2 px-4 rounded-lg geist-font wght-600 transition-all ${dateFilter === "past"
-            ? "bg-lime-100 text-lime-800"
-            : "text-gray-600 hover:bg-stone-100"
-            }`}
-          onClick={() => setDateFilter("past")}
-        >
-          Past ({pastCount})
-        </motion.button>
-      </motion.div>
-
-      {/* Events grid */}
-      <div className={`px-5 pb-5 ${addModal ? 'blur-sm' : ''}`}>
-        {isLoading.events ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lime-800 dark:border-lime-400" />
-          </div>
-        ) : filteredEvents.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-12 text-center"
-          >
-            <div className="p-4 rounded-full bg-stone-100 mb-4">
-              <CiCalendar size={32} className="text-gray-400" />
+      {/* Main Content Layout */}
+      <div className="max-w-6xl mx-auto w-full px-5 py-6 grid lg:grid-cols-5 gap-8 items-start">
+         
+         {/* Calendar Column (Left on Desktop, Top on Mobile) */}
+         <div className="lg:col-span-3">
+            <div className="bg-white dark:bg-stone-900 p-6 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-lg">
+               {/* Custom CSS overrides for react-calendar to match our theme */}
+               <style>{`
+                  .react-calendar {
+                     width: 100%;
+                     border: none;
+                     background: transparent;
+                     font-family: inherit;
+                  }
+                  .react-calendar__navigation button {
+                     min-width: 44px;
+                     background: none;
+                     font-weight: 700;
+                     font-size: 1.2rem;
+                     border-radius: 8px;
+                     transition: background-color 0.2s;
+                  }
+                  .react-calendar__navigation button:enabled:hover,
+                  .react-calendar__navigation button:enabled:focus {
+                     background-color: #f5f5f4; /* stone-100 */
+                  }
+                  .dark .react-calendar__navigation button:enabled:hover,
+                  .dark .react-calendar__navigation button:enabled:focus {
+                     background-color: #292524; /* stone-800 */
+                     color: white;
+                  }
+                  .dark .react-calendar__navigation button { color: white; }
+                  
+                  .react-calendar__month-view__weekdays {
+                     text-transform: uppercase;
+                     font-weight: 700;
+                     font-size: 0.75rem;
+                     color: #78716c; /* stone-500 */
+                     padding-bottom: 0.5rem;
+                     padding-top: 0.5rem;
+                  }
+                  .react-calendar__month-view__days__day--weekend { color: inherit; }
+                  .react-calendar__month-view__days__day--neighboringMonth { color: #d6d3d1; /* stone-300 */ }
+                  .dark .react-calendar__month-view__days__day--neighboringMonth { color: #57534e; /* stone-600 */ }
+                  
+                  .react-calendar__tile {
+                     padding: 0.75em 0.5em;
+                  }
+                  .react-calendar__tile--now { background: transparent; }
+                  
+                  /* Selected Date Styling */
+                  .react-calendar__tile--active,
+                  .react-calendar__tile--active:enabled:hover,
+                  .react-calendar__tile--active:enabled:focus {
+                     background: #4d7c0f; /* lime-700 */
+                     color: white !important;
+                     border-radius: 8px;
+                  }
+                  .dark .react-calendar__tile { color: white; }
+                  .react-calendar__tile--active * {
+                     color: white;
+                  }
+               `}</style>
+               <Calendar 
+                  onChange={handleDateChange} 
+                  value={selectedDate}
+                  tileContent={tileContent}
+                  tileClassName={tileClassName}
+                  next2Label={null}
+                  prev2Label={null}
+                  formatShortWeekday={(locale, date) => date.toLocaleDateString(locale, { weekday: 'short' })}
+               />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              No Events Found
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              {dateFilter === "upcoming"
-                ? "You don't have any upcoming events yet"
-                : "No past events to show"}
-            </p>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setAddModal(true)}
-              className="px-4 py-2 rounded-lg bg-lime-800 text-white hover:bg-lime-700 transition-colors shadow-sm geist-font wght-600"
-            >
-              Add Event
-            </motion.button>
-          </motion.div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 max-w-7xl mx-auto">
-            {filteredEvents.map((event, index) => (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 + index * 0.05 }}
-                key={event.id}
-                className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-sm hover:shadow-md transition-all"
-              >
-                <div className="p-5 flex flex-col gap-3">
-                  <div className="flex items-start justify-between">
-                    <motion.span
-                      whileHover={{ scale: 1.05 }}
-                      className={`px-3 py-1 rounded-lg text-xs geist-font wght-600 ${event.type === "Exam"
-                        ? "bg-red-100 text-red-700"
-                        : event.type === "Assignment"
-                          ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
-                          : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                        }`}
-                    >
-                      {event.type}
-                    </motion.span>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => handleDelete(event.id)}
-                      className="p-1 rounded-lg hover:bg-red-50 text-red-600 transition-colors"
-                    >
-                      <FiTrash2 size={16} />
-                    </motion.button>
-                  </div>
 
-                  <div className="flex flex-col gap-2">
-                    <h2 className="text-xl geist-font wght-700 text-gray-900 dark:text-white">
-                      {event.title}
-                    </h2>
-                    {event.description && (
-                      <p className="text-base geist-font wght-500 text-gray-600 dark:text-gray-400">
-                        {event.description}
-                      </p>
-                    )}
-                  </div>
+            {/* Legend */}
+            <div className="flex gap-4 mt-4 text-xs font-medium text-stone-500 dark:text-stone-400 justify-center">
+               <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-red-500" /> Exam</div>
+               <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-purple-500" /> Assignment</div>
+               <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-lime-500" /> Event</div>
+            </div>
+         </div>
 
-                  <div className="flex flex-wrap gap-4 mt-1">
-                    {event.date && (
-                      <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/20">
-                          <CiCalendar size={18} className="text-blue-700 dark:text-blue-400" />
+         {/* Events List Column (Right on Desktop, Bottom on Mobile) */}
+         <div className="lg:col-span-2 flex flex-col gap-4">
+            <div className="flex items-center justify-between pb-2 border-b border-stone-200 dark:border-stone-800">
+               <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                 {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+               </h2>
+               <span className="text-sm text-stone-500 font-medium">{selectedDateEvents.length} events</span>
+            </div>
+
+            {isLoading.events ? (
+               <div className="flex flex-col items-center justify-center py-12">
+                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-lime-800 mb-4" />
+               </div>
+            ) : selectedDateEvents.length > 0 ? (
+               <div className="flex flex-col gap-3 max-h-[600px] overflow-y-auto pr-1">
+                  {selectedDateEvents.map((event, index) => (
+                     <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        key={event.id}
+                        className="bg-white dark:bg-stone-900 rounded-xl p-4 shadow-sm border border-stone-200 dark:border-stone-800 hover:border-lime-300 dark:hover:border-lime-800 transition-colors group"
+                     >
+                        <div className="flex justify-between items-start mb-2">
+                           <div className="flex flex-col">
+                              <h3 className="font-bold text-gray-900 dark:text-white">{event.title}</h3>
+                              <span className={`text-xs font-medium w-fit px-2 py-0.5 rounded-full mt-1 ${
+                                 event.type === 'Exam' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                                 event.type === 'Assignment' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
+                                 'bg-lime-100 text-lime-700 dark:bg-lime-900/30 dark:text-lime-400'
+                              }`}>
+                                 {event.type}
+                              </span>
+                           </div>
+                           <button
+                              onClick={() => handleDelete(event.id)}
+                              className="p-1.5 text-stone-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                           >
+                              <FiTrash2 size={16} />
+                           </button>
                         </div>
-                        <span className="text-sm text-gray-600 dark:text-gray-400 geist-font wght-500">
-                          {formatDate(event.date)}
-                        </span>
-                      </div>
-                    )}
-                    {event.time && (
-                      <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-purple-50 dark:bg-purple-900/20">
-                          <CiClock2 size={18} className="text-purple-700 dark:text-purple-400" />
+                        
+                        {event.description && (
+                           <p className="text-sm text-stone-600 dark:text-stone-400 mb-3">{event.description}</p>
+                        )}
+                        
+                        <div className="flex flex-col gap-1.5 mt-3 pt-3 border-t border-stone-100 dark:border-stone-800">
+                           {event.time && (
+                              <div className="flex items-center gap-2 text-xs font-medium text-stone-500 dark:text-stone-400">
+                                 <CiClock2 size={14} className="text-stone-400" />
+                                 {event.time}
+                              </div>
+                           )}
+                           {event.location && (
+                              <div className="flex items-center gap-2 text-xs font-medium text-stone-500 dark:text-stone-400">
+                                 <CiMapPin size={14} className="text-stone-400" />
+                                 {event.location}
+                              </div>
+                           )}
                         </div>
-                        <span className="text-sm text-gray-600 dark:text-gray-400 geist-font wght-500">
-                          {event.time}
-                        </span>
-                      </div>
-                    )}
-                    {event.location && (
-                      <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-lime-50 dark:bg-lime-900/20">
-                          <CiMapPin size={18} className="text-lime-700 dark:text-lime-400" />
-                        </div>
-                        <span className="text-sm text-gray-600 dark:text-gray-400 geist-font wght-500">
-                          {event.location}
-                        </span>
-                      </div>
-                    )}
+                     </motion.div>
+                  ))}
+               </div>
+            ) : (
+               <div className="bg-white dark:bg-stone-900 rounded-2xl border border-dashed border-stone-300 dark:border-stone-700 p-8 text-center mt-2">
+                  <div className="mx-auto w-12 h-12 bg-stone-100 dark:bg-stone-800 rounded-full flex items-center justify-center mb-3">
+                     <FiCalendar size={24} className="text-stone-400" />
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
+                  <h3 className="text-stone-900 dark:text-white font-bold mb-1">No Events</h3>
+                  <p className="text-sm text-stone-500 dark:text-stone-400 mb-4">You have a clear schedule for this day.</p>
+                  <button 
+                     onClick={openAddModal}
+                     className="px-4 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-900 dark:text-white text-sm font-semibold rounded-lg transition-colors"
+                  >
+                     Add Event
+                  </button>
+               </div>
+            )}
+         </div>
       </div>
 
       {/* Add Event Modal */}
@@ -348,7 +347,7 @@ function Events() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm z-50"
+              className="fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-[60]"
               onClick={() => !submitting && setAddModal(false)}
             />
             <motion.div
@@ -356,131 +355,119 @@ function Events() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-x-4 bottom-4 top-auto md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-lg z-50 max-h-[90vh] overflow-y-auto"
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] md:w-full md:max-w-md z-[60]"
             >
-              <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
+              <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl border border-stone-200 dark:border-stone-800 overflow-hidden max-h-[90vh] overflow-y-auto">
                 <form className="flex flex-col" onSubmit={handleSubmit}>
-                  <div className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-stone-800 sticky top-0 bg-white dark:bg-stone-900 z-10">
+                  <div className="flex items-center justify-between p-4 border-b border-stone-100 dark:border-stone-800 sticky top-0 bg-white/95 dark:bg-stone-900/95 backdrop-blur-sm z-10">
                     <h2 className="geist-font wght-700 text-lg text-gray-900 dark:text-white">
-                      Add Event
+                      Add New Event
                     </h2>
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
                       type="button"
                       onClick={() => !submitting && setAddModal(false)}
-                      disabled={submitting}
-                      className="p-1 rounded-lg hover:bg-stone-100 text-gray-500 dark:text-gray-400 transition-colors disabled:opacity-50"
+                      className="p-1 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 text-gray-500 transition-colors"
                     >
                       <AiOutlineClose size={20} />
                     </motion.button>
                   </div>
 
-                  <div className="p-4 flex flex-col gap-4">
+                  <div className="p-5 flex flex-col gap-4">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-sm text-gray-700 dark:text-gray-300 geist-font wght-600">
-                        Event Title
-                      </label>
+                      <label className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Title</label>
                       <input
-                        placeholder="e.g., Physics Midterm Exam"
+                        placeholder="e.g., Final Exam"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        disabled={submitting}
                         required
-                        className="w-full p-3 rounded-lg border border-stone-200 dark:border-stone-700 text-base geist-font wght-500 bg-white/50 dark:bg-stone-800 dark:text-white focus:border-lime-600 focus:ring-1 focus:ring-lime-600 transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600"
+                        className="w-full p-2.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-gray-900 dark:text-white focus:border-lime-500 focus:ring-1 focus:ring-lime-500 outline-none transition-all"
                       />
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-sm text-gray-700 geist-font wght-600">
-                        Event Type
-                      </label>
-                      <select
-                        value={type}
-                        onChange={(e) => setType(e.target.value)}
-                        disabled={submitting}
-                        className="w-full p-3 rounded-lg border border-stone-200 text-base geist-font wght-500 bg-white/50 focus:border-lime-600 focus:ring-1 focus:ring-lime-600 transition-all"
-                      >
-                        <option value="Event">Event</option>
-                        <option value="Exam">Exam</option>
-                        <option value="Assignment">Assignment</option>
-                      </select>
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-sm text-gray-700 geist-font wght-600">
-                        Description (Optional)
-                      </label>
-                      <textarea
-                        placeholder="Brief description of the event"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        disabled={submitting}
-                        rows={2}
-                        className="w-full p-3 rounded-lg border border-stone-200 text-base geist-font wght-500 bg-white/50 focus:border-lime-600 focus:ring-1 focus:ring-lime-600 transition-all"
-                      />
+                      <label className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Type</label>
+                      <div className="flex gap-2">
+                        {['Event', 'Assignment', 'Exam'].map((t) => (
+                          <button
+                            key={t}
+                            type="button"
+                            onClick={() => setType(t)}
+                            className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
+                              type === t 
+                                ? (t === 'Exam' ? 'bg-red-50 border-red-200 text-red-700 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400' 
+                                 : t === 'Assignment' ? 'bg-purple-50 border-purple-200 text-purple-700 dark:bg-purple-900/30 dark:border-purple-800 dark:text-purple-400'
+                                 : 'bg-lime-50 border-lime-200 text-lime-800 dark:bg-lime-900/30 dark:border-lime-800 dark:text-lime-400')
+                                : 'border-stone-200 bg-white text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-stone-700'
+                            }`}
+                          >
+                            {t}
+                          </button>
+                        ))}
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-sm text-gray-700 geist-font wght-600">
-                          Date
-                        </label>
+                        <label className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Date</label>
                         <input
                           type="date"
                           value={date}
                           onChange={(e) => setDate(e.target.value)}
-                          disabled={submitting}
-                          className="w-full p-3 rounded-lg border border-stone-200 text-base geist-font wght-500 bg-white/50 focus:border-lime-600 focus:ring-1 focus:ring-lime-600 transition-all"
+                          required
+                          className="w-full p-2.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-gray-900 dark:text-white focus:border-lime-500 focus:ring-1 focus:ring-lime-500 outline-none transition-all"
                         />
                       </div>
-
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-sm text-gray-700 geist-font wght-600">
-                          Time
-                        </label>
+                        <label className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Time</label>
                         <input
                           type="time"
                           value={time}
                           onChange={(e) => setTime(e.target.value)}
-                          disabled={submitting}
-                          className="w-full p-3 rounded-lg border border-stone-200 text-base geist-font wght-500 bg-white/50 focus:border-lime-600 focus:ring-1 focus:ring-lime-600 transition-all"
+                          className="w-full p-2.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-gray-900 dark:text-white focus:border-lime-500 focus:ring-1 focus:ring-lime-500 outline-none transition-all"
                         />
                       </div>
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-sm text-gray-700 geist-font wght-600">
-                        Location (Optional)
-                      </label>
+                      <label className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Location (Optional)</label>
                       <input
-                        placeholder="e.g., Room 101, Main Building"
+                        placeholder="e.g., Room 302"
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
-                        disabled={submitting}
-                        className="w-full p-3 rounded-lg border border-stone-200 text-base geist-font wght-500 bg-white/50 focus:border-lime-600 focus:ring-1 focus:ring-lime-600 transition-all"
+                        className="w-full p-2.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-gray-900 dark:text-white focus:border-lime-500 focus:ring-1 focus:ring-lime-500 outline-none transition-all"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm text-gray-700 dark:text-gray-300 font-semibold">Description (Optional)</label>
+                      <textarea
+                        placeholder="Add some details..."
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        rows={3}
+                        className="w-full p-2.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-gray-900 dark:text-white focus:border-lime-500 focus:ring-1 focus:ring-lime-500 outline-none transition-all resize-none"
                       />
                     </div>
                   </div>
 
-                  <div className="flex gap-3 p-4 border-t border-stone-200 dark:border-stone-800">
+                  <div className="flex gap-3 p-4 border-t border-stone-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/50">
                     <motion.button
                       whileTap={{ scale: 0.98 }}
                       type="button"
-                      onClick={() => setAddModal(false)}
-                      disabled={submitting}
-                      className="flex-1 py-2.5 px-4 rounded-lg border border-stone-200 dark:border-stone-700 text-gray-700 dark:text-gray-300 hover:bg-stone-50 dark:hover:bg-stone-800 geist-font wght-600 transition-colors disabled:opacity-50"
+                      onClick={() => !submitting && setAddModal(false)}
+                      className="flex-1 py-2.5 px-4 rounded-lg border border-stone-200 dark:border-stone-700 text-gray-700 dark:text-gray-300 hover:bg-stone-100 dark:hover:bg-stone-800 font-semibold transition-colors"
                     >
                       Cancel
                     </motion.button>
                     <motion.button
-                      whileHover={{ scale: submitting ? 1 : 1.01 }}
-                      whileTap={{ scale: submitting ? 1 : 0.98 }}
+                      whileTap={{ scale: 0.98 }}
                       type="submit"
-                      disabled={submitting || !title.trim()}
-                      className="flex-1 py-2.5 px-4 rounded-lg bg-lime-800 dark:bg-lime-700 text-white hover:bg-lime-700 dark:hover:bg-lime-600 disabled:bg-lime-800/70 geist-font wght-600 transition-colors shadow-sm"
+                      disabled={submitting}
+                      className="flex-1 py-2.5 px-4 rounded-lg bg-lime-800 text-white hover:bg-lime-700 font-semibold transition-colors disabled:opacity-50"
                     >
-                      {submitting ? "Creating..." : "Create Event"}
+                      {submitting ? "Adding..." : "Add Event"}
                     </motion.button>
                   </div>
                 </form>

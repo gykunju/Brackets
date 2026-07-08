@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Outlet, useNavigate } from "react-router";
 import Navigation from "./Navigation";
 import { AnimatePresence } from "framer-motion";
@@ -13,6 +14,7 @@ function AppLayout() {
   const { isLoggedIn } = useUser()
   const isOnline = useOnlineStatus()
   useNotifications()
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
     <>
@@ -31,11 +33,11 @@ function AppLayout() {
                   <span>You are currently offline. Some features may be unavailable.</span>
                 </motion.div>
               )}
-              <div className="flex-1 w-full relative z-0">
+              <div className={`flex-1 w-full relative z-0 pb-20 md:pb-0 transition-all duration-300 ${isSidebarOpen ? 'md:pl-24' : 'md:pl-0'}`}>
                 <Outlet />
               </div>
               <PomodoroTimer />
-              <Navigation />
+              <Navigation isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
             </div>
           )
         }

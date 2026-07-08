@@ -163,7 +163,10 @@ export function UserProvider({ children }) {
         },
         (payload) => {
           if (payload.eventType === "INSERT") {
-            setBrackets((prev) => [payload.new, ...prev]);
+            setBrackets((prev) => {
+              if (prev.some(b => b.id === payload.new.id)) return prev;
+              return [payload.new, ...prev];
+            });
           } else if (payload.eventType === "DELETE") {
             setBrackets((prev) =>
               prev.filter((bracket) => bracket.id !== payload.old.id)
@@ -191,7 +194,10 @@ export function UserProvider({ children }) {
         },
         (payload) => {
           if (payload.eventType === "INSERT") {
-            setUnits((prev) => [...prev, payload.new]);
+            setUnits((prev) => {
+              if (prev.some(u => u.id === payload.new.id)) return prev;
+              return [...prev, payload.new];
+            });
           } else if (payload.eventType === "DELETE") {
             setUnits((prev) =>
               prev.filter((unit) => unit.id !== payload.old.id)
@@ -219,7 +225,10 @@ export function UserProvider({ children }) {
         },
         (payload) => {
           if (payload.eventType === "INSERT") {
-            setEvents((prev) => [...prev, payload.new]);
+            setEvents((prev) => {
+              if (prev.some(e => e.id === payload.new.id)) return prev;
+              return [...prev, payload.new];
+            });
           } else if (payload.eventType === "DELETE") {
             setEvents((prev) =>
               prev.filter((event) => event.id !== payload.old.id)
@@ -532,18 +541,37 @@ export function UserProvider({ children }) {
     }
   }
 
-  async function getUnits() {
+  async function getUnits(profileId = null) {
     try {
+      let targetProfileId = profileId;
+      if (!targetProfileId) {
+        if (profile?.id) {
+          targetProfileId = profile.id;
+        } else {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user?.id) {
+            const { data: p } = await supabase.from("profile").select("id").eq("supabase_user_id", session.user.id).single();
+            if (p) targetProfileId = p.id;
+          }
+        }
+      }
+
+      if (!targetProfileId) return;
+
       setIsLoading((prev) => ({ ...prev, units: true }));
       const { data, error } = await supabase
         .from("unit")
-        .select("*")
+        .select("*, bracket!inner(user_id)")
+        .eq("bracket.user_id", targetProfileId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      setUnits(data || []);
-      return data;
+      // Clean up the joined bracket data from the results so it matches original format
+      const cleanedData = data ? data.map(({ bracket, ...unit }) => unit) : [];
+
+      setUnits(cleanedData);
+      return cleanedData;
     } catch (error) {
       console.error("Error fetching units:", error.message);
       setErrors((prev) => [...prev, error]);
@@ -762,7 +790,7 @@ export function UserProvider({ children }) {
       setIsLoading((prev) => ({ ...prev, content: true }));
       const { data, error } = await supabase
         .from("content")
-        .select("*")
+        .select("id, created_at, title, description, file_url, file_name, file_type, file_size, mime_type, unit_id, user_id")
         .eq("user_id", targetProfileId)
         .order("created_at", { ascending: false });
 
@@ -934,13 +962,50 @@ export function UserProvider({ children }) {
             mime_type: file.type,
             unit_id: unitId,
             user_id: targetProfileId,
-            extracted_text: extractedText,
           },
         ])
         .select()
         .single();
 
       if (contentError) throw contentError;
+
+      // RAG: Generate embeddings for chunks and store them in content_chunks table
+      if (extractedText && extractedText.length > 50) {
+        try {
+           console.log("Chunking text and generating embeddings...");
+           const { chunkText, generateEmbedding } = await import("../services/embeddingService");
+           const chunks = chunkText(extractedText);
+           
+           if (chunks.length > 0) {
+             const chunksToInsert = [];
+             for (let i = 0; i < chunks.length; i++) {
+                const chunk = chunks[i];
+                const embedding = await generateEmbedding(chunk);
+                chunksToInsert.push({
+                   content_id: contentData.id,
+                   user_id: targetProfileId,
+                   chunk_index: i,
+                   chunk_text: chunk,
+                   embedding: embedding
+                });
+             }
+             
+             // Insert all chunks to Supabase
+             const { error: chunkError } = await supabase
+                .from("content_chunks")
+                .insert(chunksToInsert);
+                
+             if (chunkError) {
+                console.error("Failed to insert content chunks:", chunkError);
+             } else {
+                console.log(`Successfully indexed ${chunks.length} chunks for ${file.name}`);
+             }
+           }
+        } catch (embeddingError) {
+           console.error("Error during text embedding generation:", embeddingError);
+           // We do NOT throw here, so the upload still completes successfully even if AI indexing fails
+        }
+      }
 
       setContent((prev) => [contentData, ...prev]);
       return contentData;

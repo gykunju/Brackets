@@ -1,17 +1,21 @@
 import { IoMdArrowBack } from "react-icons/io";
 import { LuBookMinus, LuTrash2, LuPencil } from "react-icons/lu";
-import { Link } from "react-router";
+import { FiShare2, FiCopy } from "react-icons/fi";
+import { useNavigate, Link } from "react-router";
 import { GrFormNext, GrAdd } from "react-icons/gr";
 import { AiOutlineClose } from "react-icons/ai";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useUser } from "../context/UserContext";
+import { toast } from "react-hot-toast";
 
 function Brackets() {
+  const navigate = useNavigate();
   const { brackets, setBrackets, createBracket, updateBracket, deleteBracket } = useUser();
 
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
+  const [shareModal, setShareModal] = useState(false);
   const [selectedBracket, setSelectedBracket] = useState(null);
   const [title, setTitle] = useState("");
   const [editTitle, setEditTitle] = useState("");
@@ -19,7 +23,7 @@ function Brackets() {
   const [isLoading, setIsLoading] = useState(false);
 
   const backPage = () => {
-    window.history.back();
+    navigate(-1);
   };
 
   const addBracket = async (e) => {
@@ -36,8 +40,9 @@ function Brackets() {
 
       setTitle("");
       setAddModal(false);
+      toast.success("Bracket created successfully!");
     } catch (error) {
-      alert(`Error creating bracket: ${error.message}`);
+      toast.error(`Error creating bracket: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -55,8 +60,9 @@ function Brackets() {
       });
       setEditModal(false);
       setSelectedBracket(null);
+      toast.success("Bracket updated successfully!");
     } catch (error) {
-      alert("Failed to update bracket");
+      toast.error("Failed to update bracket");
     } finally {
       setIsLoading(false);
     }
@@ -69,8 +75,9 @@ function Brackets() {
     if (window.confirm("Are you sure you want to delete this bracket? All units and content inside will be lost.")) {
       try {
         await deleteBracket(id);
+        toast.success("Bracket deleted successfully!");
       } catch (error) {
-        alert("Failed to delete bracket");
+        toast.error("Failed to delete bracket");
       }
     }
   };
@@ -82,6 +89,36 @@ function Brackets() {
     setEditTitle(bracket.title);
     setIsCurrent(bracket.current);
     setEditModal(true);
+  };
+
+  const openShareModal = (bracket, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedBracket(bracket);
+    setShareModal(true);
+  };
+
+  const handleTogglePublic = async () => {
+    if (!selectedBracket) return;
+    try {
+      setIsLoading(true);
+      const updated = await updateBracket(selectedBracket.id, {
+        is_public: !selectedBracket.is_public
+      });
+      setSelectedBracket(updated);
+      toast.success(updated.is_public ? "Bracket is now public!" : "Bracket is now private.");
+    } catch (error) {
+      toast.error("Failed to update sharing settings.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const copyShareLink = () => {
+    if (!selectedBracket?.share_token) return;
+    const link = `${window.location.origin}/share/${selectedBracket.share_token}`;
+    navigator.clipboard.writeText(link);
+    toast.success("Link copied to clipboard!");
   };
 
   return (
@@ -157,6 +194,15 @@ function Brackets() {
                       <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
+                        onClick={(e) => openShareModal(bracket, e)}
+                        className="p-2 text-stone-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Share Bracket"
+                      >
+                        <FiShare2 size={18} />
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
                         onClick={(e) => openEditModal(bracket, e)}
                         className="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
                         title="Edit Bracket"
@@ -194,17 +240,18 @@ function Brackets() {
       </div>
 
       <AnimatePresence>
-        {(addModal || editModal) && (
+        {(addModal || editModal || shareModal) && (
           <>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-50"
+              className="fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-[60]"
               onClick={() => {
                 setAddModal(false);
                 setEditModal(false);
+                setShareModal(false);
               }}
             />
             <motion.div
@@ -212,9 +259,55 @@ function Brackets() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-x-4 bottom-4 top-auto md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-sm z-50"
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] md:w-full md:max-w-sm z-[60]"
             >
               <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-xl border border-stone-200 dark:border-stone-800 overflow-hidden">
+                {shareModal ? (
+                  <div className="flex flex-col">
+                    <div className="flex items-center justify-between p-4 border-b border-stone-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/50">
+                      <h2 className="geist-font wght-600 text-lg text-stone-900 dark:text-white flex items-center gap-2">
+                        <FiShare2 /> Share Bracket
+                      </h2>
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setShareModal(false)}
+                        className="p-1 rounded-lg hover:bg-stone-200 text-stone-500 transition-colors"
+                      >
+                        <AiOutlineClose size={20} />
+                      </motion.button>
+                    </div>
+                    <div className="p-5 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-stone-900 dark:text-white">Public Link</p>
+                          <p className="text-xs text-stone-500 dark:text-stone-400">Anyone with the link can view and clone.</p>
+                        </div>
+                        <button
+                          onClick={handleTogglePublic}
+                          disabled={isLoading}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${selectedBracket?.is_public ? 'bg-lime-600' : 'bg-stone-200 dark:bg-stone-700'}`}
+                        >
+                          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${selectedBracket?.is_public ? 'translate-x-6' : 'translate-x-1'}`} />
+                        </button>
+                      </div>
+                      
+                      {selectedBracket?.is_public && (
+                        <div className="mt-4 p-3 bg-stone-50 dark:bg-stone-800 rounded-lg border border-stone-200 dark:border-stone-700 flex items-center justify-between gap-2">
+                          <span className="text-sm text-stone-600 dark:text-stone-300 truncate flex-1 font-mono">
+                            {window.location.origin}/share/{selectedBracket.share_token}
+                          </span>
+                          <button
+                            onClick={copyShareLink}
+                            className="p-2 text-stone-500 hover:text-stone-700 dark:hover:text-stone-300 bg-white dark:bg-stone-900 rounded-md border border-stone-200 dark:border-stone-700 shadow-sm"
+                          >
+                            <FiCopy size={16} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
                 <form className="flex flex-col" onSubmit={addModal ? addBracket : handleEditBracket}>
                   <div className="flex items-center justify-between p-4 border-b border-stone-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/50">
                     <h2 className="geist-font wght-600 text-lg text-stone-900 dark:text-white">
@@ -288,6 +381,7 @@ function Brackets() {
                     </motion.button>
                   </div>
                 </form>
+                )}
               </div>
             </motion.div>
           </>

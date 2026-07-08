@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { motion } from 'framer-motion'
 import { BsArrowLeft, BsQuestionCircle } from 'react-icons/bs'
@@ -7,9 +8,11 @@ function NotFound() {
     const navigate = useNavigate()
     const params = useParams()
 
-    if (params['*'] == 'signup' || params['*'] == 'signin') {
-        navigate('/')
-    }
+    useEffect(() => {
+        if (params['*'] == 'signup' || params['*'] == 'signin') {
+            navigate('/', { replace: true })
+        }
+    }, [params, navigate])
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-lime-50 via-white to-stone-50 geist-font flex items-center justify-center px-6 overflow-hidden">

@@ -13,9 +13,11 @@ import Content from "./pages/Content"
 import Home from "./pages/Home"
 import Profile from "./pages/Profile"
 import AccountDetails from "./pages/AccountDetails"
+import SharedBracket from "./pages/SharedBracket"
 import NotFound from "./pages/NotFound"
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { useUser } from './context/UserContext'
+import { Toaster } from 'react-hot-toast';
 
 function App() {
 
@@ -35,6 +37,7 @@ function App() {
   return (
     <>
       <Routes>
+        <Route path="/share/:share_token" element={<SharedBracket />} />
         {
           !isLoggedIn ? (
             <>
@@ -58,6 +61,7 @@ function App() {
           )
         }
       </Routes>
+      <Toaster position="bottom-right" />
       <SpeedInsights />
     </>
   );

@@ -6,6 +6,8 @@ import { FaFilePowerpoint, FaFileWord } from "react-icons/fa6";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useUser } from "../context/UserContext";
+import { toast } from "react-hot-toast";
+import DocumentViewer from "../components/DocumentViewer";
 
 function Content() {
   const navigate = useNavigate();
@@ -18,6 +20,7 @@ function Content() {
   const [content, setContent] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploadModal, setUploadModal] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
 
   // Upload content form
   const [contentTitle, setContentTitle] = useState("");
@@ -109,9 +112,10 @@ function Content() {
       setContentDescription("");
       setSelectedFile(null);
       setUploadModal(false);
+      toast.success("File uploaded successfully!");
     } catch (error) {
       console.error("Error uploading file:", error);
-      alert(error.message || "Failed to upload file. Please try again.");
+      toast.error(error.message || "Failed to upload file. Please try again.");
     } finally {
       setUploading(false);
     }
@@ -124,9 +128,10 @@ function Content() {
     try {
       await deleteContent(contentId, fileUrl);
       await fetchContent();
+      toast.success("Content deleted successfully!");
     } catch (error) {
       console.error("Error deleting content:", error);
-      alert("Failed to delete content. Please try again.");
+      toast.error("Failed to delete content. Please try again.");
     }
   };
 
@@ -252,14 +257,13 @@ function Content() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <a
-                      href={item.file_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      onClick={() => setSelectedDocument(item)}
                       className="p-2 rounded-lg hover:bg-lime-100 dark:hover:bg-lime-900/30 text-gray-600 dark:text-gray-400 hover:text-lime-800 dark:hover:text-lime-400 transition-colors"
+                      title="View Document"
                     >
                       <FiFile size={18} />
-                    </a>
+                    </button>
                     <button
                       onClick={() =>
                         handleDeleteContent(item.id, item.file_url)
@@ -285,7 +289,7 @@ function Content() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm z-50"
+              className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm z-[60]"
               onClick={() => !uploading && setUploadModal(false)}
             />
             <motion.div
@@ -293,7 +297,7 @@ function Content() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-x-4 bottom-4 top-auto md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-md z-50"
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] md:w-full md:max-w-md z-[60]"
             >
               <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
                 <form className="flex flex-col" onSubmit={handleFileUpload}>
@@ -389,6 +393,16 @@ function Content() {
               </div>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Document Viewer Modal */}
+      <AnimatePresence>
+        {selectedDocument && (
+          <DocumentViewer 
+            document={selectedDocument} 
+            onClose={() => setSelectedDocument(null)} 
+          />
         )}
       </AnimatePresence>
     </motion.div>

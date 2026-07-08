@@ -20,7 +20,7 @@ const VISION_MODEL = "llama-3.2-90b-vision-preview";
  * @param {Object} userContext - User's brackets, units, and content data
  * @returns {Promise<string>} AI response
  */
-export async function sendMessage(message, chatHistory = [], userContext = {}) {
+export async function sendMessage(message, chatHistory = [], userContext = {}, supabase = null) {
   try {
     if (!API_KEY) throw new Error("Groq API Key is missing");
 
@@ -58,23 +58,48 @@ Follow these guidelines:
       });
     }
 
-      systemPrompt += "\n\nThey have uploaded the following study materials:\n";
-      userContext.content.forEach(content => {
-        const unit = userContext.units?.find(u => u.id === content.unit_id);
-        systemPrompt += `- ${content.title} (${content.file_type})`;
-        if (unit) systemPrompt += ` - in unit: ${unit.title}`;
+      if (userContext.content && userContext.content.length > 0 && supabase) {
+        systemPrompt += "\n\nThe student has uploaded study materials. Here are the most relevant excerpts based on their query:\n";
         
-        // Include extracted text content if available
-        if (content.extracted_text && content.extracted_text.length > 50) { // arbitrary small threshold
-           const truncatedText = content.extracted_text.substring(0, 50000); 
-           systemPrompt += `\n  [START OF DOCUMENT CONTENT]\n  ${truncatedText}...\n  [END OF DOCUMENT CONTENT]`;
-           systemPrompt += `\n  (Assistant Note: The text above is the actual content of the file "${content.title}". You CAN read it.)`;
-        } else {
-            systemPrompt += `\n  (Content not available or empty)`;
+        try {
+          const { generateEmbedding } = await import("./embeddingService");
+          const queryEmbedding = await generateEmbedding(message);
+          
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+             const { data: profile } = await supabase.from('profile').select('id').eq('supabase_user_id', user.id).single();
+             
+             if (profile) {
+                const { data: chunks, error: rpcError } = await supabase.rpc('match_content_chunks', {
+                  query_embedding: queryEmbedding,
+                  match_threshold: 0.1, // very low threshold to ensure we catch related concepts
+                  match_count: 4,       // top 4 chunks
+                  p_user_id: profile.id
+                });
+                
+                if (rpcError) {
+                   console.error("RPC Error:", rpcError);
+                }
+                
+                if (!rpcError && chunks && chunks.length > 0) {
+                   chunks.forEach((chunk, index) => {
+                      const contentFile = userContext.content.find(c => c.id === chunk.content_id);
+                      const sourceName = contentFile ? contentFile.title : "Unknown File";
+                      systemPrompt += `\n[Excerpt ${index + 1} from "${sourceName}"]\n${chunk.chunk_text}\n`;
+                   });
+                   systemPrompt += "\nUse the above excerpts to answer the student's question accurately. If the excerpts don't contain the answer, you can rely on your general knowledge but mention that it wasn't found in their uploaded documents.\n";
+                } else {
+                   systemPrompt += "\n(No highly relevant excerpts found in their uploaded documents for this specific query.)\n";
+                }
+             }
+          }
+        } catch (err) {
+           console.error("RAG matching failed:", err);
+           systemPrompt += "\n(Error retrieving document excerpts.)\n";
         }
-        
-        systemPrompt += '\n';
-      });
+      } else if (userContext.content && userContext.content.length > 0) {
+         systemPrompt += "\n\nThey have uploaded study materials, but document retrieval is currently unavailable.\n";
+      }
 
     if (userContext.events && userContext.events.length > 0) {
       systemPrompt += "\n\nUpcoming events and deadlines:\n";
@@ -178,7 +203,68 @@ ${pdfText.substring(0, 15000)}`; // Llama context window handling
     return completion.choices[0]?.message?.content || "No analysis generated.";
   } catch (error) {
     console.error("Error analyzing PDF:", error);
-    throw new Error("Failed to analyze PDF.");
+    throw new Error("Failed to analyze PDF document.");
+  }
+}
+
+/**
+ * Generate a JSON quiz based on a unit's content chunks
+ * @param {string} unitId - The unit ID
+ * @param {Object} userContext - Context containing content
+ * @param {Object} supabase - Supabase client
+ * @returns {Promise<Array>} Array of question objects
+ */
+export async function generateQuiz(unitId, userContext, supabase) {
+  try {
+    const unitContents = userContext.content?.filter(c => c.unit_id === unitId) || [];
+    
+    if (unitContents.length === 0) {
+      throw new Error("No documents found in this unit. Please upload some materials first.");
+    }
+
+    let systemPrompt = `You are a strict JSON API. Generate a 5-question multiple choice quiz based ONLY on the provided excerpts.
+You MUST respond with a valid JSON object containing a "quiz" array. Do NOT include markdown code blocks (like \`\`\`json).
+Format:
+{
+  "quiz": [
+    {
+      "question": "What is...?",
+      "options": ["A", "B", "C", "D"],
+      "correctAnswer": 0,
+      "explanation": "Because..."
+    }
+  ]
+}
+
+Excerpts:
+`;
+
+    // Fetch up to 20 random chunks from the unit's documents to use as context
+    const contentIds = unitContents.map(c => c.id);
+    const { data: chunks } = await supabase
+      .from('content_chunks')
+      .select('chunk_text')
+      .in('content_id', contentIds)
+      .limit(20);
+      
+    if (chunks && chunks.length > 0) {
+      chunks.forEach(c => systemPrompt += c.chunk_text + "\n\n");
+    } else {
+      throw new Error("No text could be extracted from this unit's documents.");
+    }
+
+    const completion = await groq.chat.completions.create({
+      messages: [{ role: "system", content: systemPrompt }],
+      model: DEFAULT_MODEL,
+      temperature: 0.3,
+      response_format: { type: "json_object" }
+    });
+
+    const parsed = JSON.parse(completion.choices[0]?.message?.content);
+    return parsed.quiz || [];
+  } catch (error) {
+    console.error("Quiz generation failed:", error);
+    throw new Error(error.message || "Failed to generate quiz.");
   }
 }
 

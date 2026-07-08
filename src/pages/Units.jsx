@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { useUser } from "../context/UserContext";
 import confetti from "canvas-confetti";
 import { IoCheckmarkCircle, IoRadioButtonOff } from "react-icons/io5";
+import QuizModal from "../components/QuizModal";
 
 function Units() {
   const navigate = useNavigate();
@@ -19,9 +20,10 @@ function Units() {
   const [editTitle, setEditTitle] = useState("");
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [error, setError] = useState(null);
+  const [selectedUnitForQuiz, setSelectedUnitForQuiz] = useState(null);
 
   const backPage = () => {
-    window.history.back();
+    navigate(-1);
   };
 
   const location = useLocation();
@@ -256,6 +258,18 @@ function Units() {
                         <motion.button
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedUnitForQuiz(unit);
+                          }}
+                          className="p-2 text-lime-700 dark:text-lime-400 hover:bg-lime-50 dark:hover:bg-lime-900/30 rounded-lg transition-colors"
+                          title="Generate Quiz"
+                        >
+                          <LuNotebookText size={18} />
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
                           onClick={(e) => toggleUnitCompletion(unit, e)}
                           className={`p-2 rounded-lg transition-colors ${unit.completed ? 'text-lime-600 bg-lime-50 dark:bg-lime-900/30 dark:text-lime-400' : 'text-stone-400 hover:text-lime-600 hover:bg-stone-100 dark:hover:bg-stone-800'}`}
                           title={unit.completed ? "Mark Incomplete" : "Mark Complete"}
@@ -334,7 +348,7 @@ function Units() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm z-50"
+              className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm z-[60]"
               onClick={() => {
                 setAddModal(false);
                 setEditModal(false);
@@ -345,7 +359,7 @@ function Units() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-x-4 bottom-4 top-auto md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-sm z-50"
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] md:w-full md:max-w-sm z-[60]"
             >
               <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-lg border border-stone-200 dark:border-stone-800 overflow-hidden">
                 <form className="flex flex-col" onSubmit={addModal ? addUnit : handleEditUnit}>
@@ -413,6 +427,16 @@ function Units() {
               </div>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Quiz Modal */}
+      <AnimatePresence>
+        {selectedUnitForQuiz && (
+          <QuizModal 
+            unit={selectedUnitForQuiz} 
+            onClose={() => setSelectedUnitForQuiz(null)} 
+          />
         )}
       </AnimatePresence>
     </motion.div>

@@ -12,6 +12,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router";
 import { useUser } from "../context/UserContext";
 import { useTheme } from "../context/ThemeContext";
+import { toast } from "react-hot-toast";
 
 function Profile() {
   const { signOut, profile, getProfile, user } = useUser();
@@ -20,6 +21,30 @@ function Profile() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [notificationEnabled, setNotificationEnabled] = useState(() => {
+    return "Notification" in window ? Notification.permission === "granted" : false;
+  });
+
+  const handleNotificationToggle = async (e) => {
+    if (!("Notification" in window)) {
+      toast.error("Notifications are not supported in this browser");
+      return;
+    }
+
+    if (e.target.checked) {
+      const permission = await Notification.requestPermission();
+      setNotificationEnabled(permission === "granted");
+      if (permission === "granted") {
+        toast.success("Native notifications enabled!");
+      } else {
+        toast.error("Notification permission denied");
+      }
+    } else {
+      // Browsers don't allow programmatic revoking, so just state update + warning
+      toast("You must disable permissions in your browser settings to completely revoke them.", { icon: 'ℹ️' });
+      setNotificationEnabled(false);
+    }
+  };
 
   const backPage = () => {
     window.history.back();
@@ -182,7 +207,11 @@ function Profile() {
                   </p>
                 </div>
                 <label className="switch">
-                  <input type="checkbox" />
+                  <input 
+                    type="checkbox" 
+                    checked={notificationEnabled}
+                    onChange={handleNotificationToggle}
+                  />
                   <span className="slider round"></span>
                 </label>
               </div>
