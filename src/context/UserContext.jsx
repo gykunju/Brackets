@@ -1,8 +1,6 @@
 import { useContext, createContext, useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router";
 import { createClient } from "@supabase/supabase-js";
-import { parseDocument } from "../services/documentParser";
-import { extractTextFromVisualPDF } from "../services/aiService";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -89,27 +87,34 @@ export function UserProvider({ children }) {
         if (session) {
           setUser(session.user);
           setIsLoggedIn(true);
-          // Fetch profile first, then fetch all other data in parallel
-          try {
-            const profileData = await getProfile();
-            if (profileData?.id) {
-              await Promise.all([
-                getBrackets(profileData.id),
-                getUnits(),
-                getEvents(profileData.id),
-                getAllContent(profileData.id)
-              ]);
+          // Release authLoading immediately so the workspace/cached data renders instantly!
+          setAuthLoading(false);
+
+          // Fetch profile and fresh workspace data in the background
+          (async () => {
+            try {
+              const profileData = await getProfile();
+              if (profileData?.id) {
+                await Promise.all([
+                  getBrackets(profileData.id),
+                  getUnits(),
+                  getEvents(profileData.id),
+                  getAllContent(profileData.id)
+                ]);
+              }
+            } catch (fetchError) {
+              console.error("Error fetching background data:", fetchError);
             }
-          } catch (fetchError) {
-            console.error("Error fetching initial data:", fetchError);
-          }
+          })();
         } else {
           setUser(null);
           setProfile(null);
           setIsLoggedIn(false);
+          setAuthLoading(false);
         }
       } catch (error) {
         console.error("Error initializing app:", error);
+        setAuthLoading(false);
       } finally {
         setAuthLoading(false);
       }
@@ -927,13 +932,15 @@ export function UserProvider({ children }) {
       ) {
         try {
           console.log(`Extracting text from ${fileType} file...`);
+          const { parseDocument } = await import("../services/documentParser");
           extractedText = await parseDocument(file, fileType);
           
           // Fallback to Visual OCR if text is too short (likely scanned or slides)
           if (!extractedText || extractedText.length < 200) {
              console.log("Text extraction yielded low content (likely images/slides). Attempting Visual OCR...");
+             const { extractTextFromVisualPDF } = await import("../services/aiService");
              const ocrText = await extractTextFromVisualPDF(file);
-             if (ocrText && ocrText.length > extractedText.length) {
+             if (ocrText && ocrText.length > (extractedText ? extractedText.length : 0)) {
                 console.log("Visual OCR successful. replaced text.");
                 extractedText = `[Visual OCR Result]\n${ocrText}`;
              }
