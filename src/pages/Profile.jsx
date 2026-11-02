@@ -13,6 +13,7 @@ import { useNavigate } from "react-router";
 import { useUser } from "../context/UserContext";
 import { useTheme } from "../context/ThemeContext";
 import { toast } from "react-hot-toast";
+import { testReminderAlert, enableRemindersAndAudio } from "../hooks/useNotifications";
 
 function Profile() {
   const { signOut, profile, getProfile, user } = useUser();
@@ -22,7 +23,9 @@ function Profile() {
   const [error, setError] = useState(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [notificationEnabled, setNotificationEnabled] = useState(() => {
-    return "Notification" in window ? Notification.permission === "granted" : false;
+    return typeof window !== 'undefined' && "Notification" in window
+      ? Notification.permission === "granted"
+      : false;
   });
 
   const handleNotificationToggle = async (e) => {
@@ -32,10 +35,10 @@ function Profile() {
     }
 
     if (e.target.checked) {
-      const permission = await Notification.requestPermission();
-      setNotificationEnabled(permission === "granted");
-      if (permission === "granted") {
-        toast.success("Native notifications enabled!");
+      const granted = await enableRemindersAndAudio();
+      setNotificationEnabled(granted);
+      if (granted) {
+        testReminderAlert();
       } else {
         toast.error("Notification permission denied");
       }

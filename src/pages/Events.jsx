@@ -1,19 +1,25 @@
 import { GrAdd } from "react-icons/gr";
 import { CiCalendar, CiClock2, CiMapPin } from "react-icons/ci";
 import { AiOutlineClose } from "react-icons/ai";
-import { FiTrash2, FiCalendar } from "react-icons/fi";
+import { FiTrash2, FiCalendar, FiBell } from "react-icons/fi";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser } from '../context/UserContext';
 import { toast } from "react-hot-toast";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
+import { testReminderAlert, enableRemindersAndAudio, parseEventDateTime } from '../hooks/useNotifications';
 
 function Events() {
   const { events, createEvent, deleteEvent, getEvents, isLoading } = useUser();
   const [addModal, setAddModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [hasNotificationPermission, setHasNotificationPermission] = useState(() => {
+    return typeof window !== 'undefined' && "Notification" in window
+      ? Notification.permission === "granted"
+      : false;
+  });
 
   // Form fields
   const [title, setTitle] = useState("");
@@ -33,13 +39,23 @@ function Events() {
     setSelectedDate(newDate);
   };
 
+  const handleEnableNotifications = async () => {
+    const granted = await enableRemindersAndAudio();
+    setHasNotificationPermission(granted);
+    if (granted) {
+      testReminderAlert();
+    } else {
+      toast.error("Notification permission denied. Check your browser settings.");
+    }
+  };
+
   const selectedDateEvents = events.filter(event => {
     if (!event.date) return false;
-    const eventDate = new Date(event.date);
-    // Important: Account for timezone by doing localized string comparison or simply:
-    return eventDate.getUTCFullYear() === selectedDate.getFullYear() &&
-           eventDate.getUTCMonth() === selectedDate.getMonth() &&
-           eventDate.getUTCDate() === selectedDate.getDate();
+    const eventDate = parseEventDateTime(event.date, event.time);
+    if (!eventDate) return false;
+    return eventDate.getFullYear() === selectedDate.getFullYear() &&
+           eventDate.getMonth() === selectedDate.getMonth() &&
+           eventDate.getDate() === selectedDate.getDate();
   }).sort((a, b) => {
      if (a.time && b.time) return a.time.localeCompare(b.time);
      return 0;
@@ -48,10 +64,11 @@ function Events() {
   const getDayEvents = (dateObj) => {
     return events.filter(e => {
         if (!e.date) return false;
-        const eventDate = new Date(e.date);
-        return eventDate.getUTCFullYear() === dateObj.getFullYear() &&
-               eventDate.getUTCMonth() === dateObj.getMonth() &&
-               eventDate.getUTCDate() === dateObj.getDate();
+        const eventDate = parseEventDateTime(e.date, e.time);
+        if (!eventDate) return false;
+        return eventDate.getFullYear() === dateObj.getFullYear() &&
+               eventDate.getMonth() === dateObj.getMonth() &&
+               eventDate.getDate() === dateObj.getDate();
     });
   };
 
@@ -160,18 +177,43 @@ function Events() {
         transition={{ delay: 0.1 }}
         className="px-5 py-4 bg-white/80 dark:bg-stone-900/80 backdrop-blur-sm sticky top-0 border-b border-stone-100 dark:border-stone-800 z-20"
       >
-        <div className="flex justify-between items-center max-w-6xl mx-auto">
+        <div className="flex justify-between items-center max-w-6xl mx-auto gap-3">
           <h1 className="geist-font wght-700 text-xl text-gray-900 dark:text-white flex items-center gap-2">
              <FiCalendar /> Calendar
           </h1>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={openAddModal}
-            className="p-2 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-          >
-            <GrAdd size={22} className="text-gray-700 dark:text-gray-300" />
-          </motion.button>
+          <div className="flex items-center gap-2">
+            {!hasNotificationPermission && (
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={handleEnableNotifications}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-lime-100 dark:bg-lime-900/40 text-lime-800 dark:text-lime-300 text-xs font-semibold hover:bg-lime-200 transition-colors"
+                title="Enable browser notifications and alarm sounds"
+              >
+                <FiBell size={14} />
+                <span>Enable Alarms</span>
+              </motion.button>
+            )}
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={testReminderAlert}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-medium hover:bg-stone-50 dark:hover:bg-stone-700/50 transition-colors"
+              title="Test the chime and native notification"
+            >
+              <FiBell size={14} className="text-lime-600" />
+              <span>Test Alarm</span>
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={openAddModal}
+              className="p-2 rounded-lg bg-stone-900 dark:bg-lime-600 text-white hover:bg-stone-800 dark:hover:bg-lime-500 transition-colors ml-1"
+              title="Add New Event"
+            >
+              <GrAdd size={18} className="text-white" />
+            </motion.button>
+          </div>
         </div>
       </motion.div>
 
