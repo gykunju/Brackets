@@ -22,7 +22,7 @@ async function run() {
     try {
         const completion = await groq.chat.completions.create({
             messages: [{ role: "user", content: "Say 'Hello from Groq!'" }],
-            model: "llama-3.3-70b-versatile",
+            model: "openai/gpt-oss-120b",
         });
         console.log("\n✅ Success! Response:");
         console.log(completion.choices[0]?.message?.content);

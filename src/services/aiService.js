@@ -10,8 +10,29 @@ const groq = new Groq({
   dangerouslyAllowBrowser: true 
 });
 
-const DEFAULT_MODEL = "llama-3.3-70b-versatile";
-const VISION_MODEL = "llama-3.2-90b-vision-preview"; 
+const DEFAULT_MODEL = "openai/gpt-oss-120b";
+const FALLBACK_MODELS = ["openai/gpt-oss-120b", "qwen/qwen3.8-27b", "openai/gpt-oss-20b"];
+const VISION_MODEL = "qwen/qwen3.8-27b";
+
+/**
+ * Execute chat completion with automatic model fallback
+ */
+async function executeChatCompletion(params) {
+  if (params.model === VISION_MODEL) {
+    return await groq.chat.completions.create(params);
+  }
+
+  let lastError = null;
+  for (const model of FALLBACK_MODELS) {
+    try {
+      return await groq.chat.completions.create({ ...params, model });
+    } catch (err) {
+      console.warn(`Groq model ${model} failed, attempting fallback...`, err.message);
+      lastError = err;
+    }
+  }
+  throw lastError;
+}
 
 /**
  * Send a message to Groq AI with context about user's brackets and units
@@ -129,7 +150,7 @@ Follow these guidelines:
     // Add current message
     messages.push({ role: "user", content: message });
 
-    const completion = await groq.chat.completions.create({
+    const completion = await executeChatCompletion({
       messages: messages,
       model: DEFAULT_MODEL,
       temperature: 0.7,
@@ -140,7 +161,7 @@ Follow these guidelines:
 
   } catch (error) {
     console.error("Error calling Groq API:", error);
-    throw new Error("Failed to get AI response. Please check your API key or try again.");
+    throw new Error(error.message || "Failed to get AI response. Please check your API key or try again.");
   }
 }
 
@@ -193,7 +214,7 @@ export async function analyzePDF(pdfText, fileName) {
 Document content:
 ${pdfText.substring(0, 15000)}`; // Llama context window handling
 
-    const completion = await groq.chat.completions.create({
+    const completion = await executeChatCompletion({
       messages: [
         { role: "user", content: prompt }
       ],
@@ -203,7 +224,7 @@ ${pdfText.substring(0, 15000)}`; // Llama context window handling
     return completion.choices[0]?.message?.content || "No analysis generated.";
   } catch (error) {
     console.error("Error analyzing PDF:", error);
-    throw new Error("Failed to analyze PDF document.");
+    throw new Error(error.message || "Failed to analyze PDF document.");
   }
 }
 
@@ -253,7 +274,7 @@ Excerpts:
       throw new Error("No text could be extracted from this unit's documents.");
     }
 
-    const completion = await groq.chat.completions.create({
+    const completion = await executeChatCompletion({
       messages: [{ role: "system", content: systemPrompt }],
       model: DEFAULT_MODEL,
       temperature: 0.3,
